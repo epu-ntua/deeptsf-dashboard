@@ -15,11 +15,9 @@ import CodelessForecast from "./pages/CodelessForecast";
 import ExperimentTracking from "./pages/ExperimentTracking";
 import SystemMonitoring from "./pages/SystemMonitoring";
 
-// Set primary color here
-let primary = '#97A94D'
-
-// Set secondary color here
-let secondary = '#B2C561'
+// Load environment variables
+const primary = process.env.REACT_APP_PRIMARY_COLOR || '#97A94D'; // fallback if env var isn't set
+const secondary = process.env.REACT_APP_SECONDARY_COLOR || '#B2C561';
 
 // Dashboard theme setup here
 const theme = createTheme({
@@ -43,9 +41,12 @@ const theme = createTheme({
 });
 
 function App() {
-    const authenticationEnabled = process.env.REACT_APP_AUTH === "True"
-    const {keycloak} = useKeycloak()
-    axios.defaults.baseURL = authenticationEnabled ? 'https://inergy.epu.ntua.gr:8080' : 'http://localhost:8080';
+    const authenticationEnabled = process.env.REACT_APP_AUTH === "True";
+    const {keycloak} = useKeycloak();
+    
+    // Use environment variable for backend URL
+    // axios.defaults.baseURL = process.env.REACT_APP_BACKEND_BASE_URL || 'http://localhost:8081';
+    axios.defaults.baseURL = process.env.REACT_APP_BACKEND_BASE_URL;
     axios.defaults.headers.common['Authorization'] = `Bearer ${keycloak.token}` || '';
 
     return (
@@ -55,7 +56,7 @@ function App() {
                     <Routes>
                         <Route path="/" element={<Homepage/>}/>
 
-                         Routes not accessible to logged-out users
+                         {/* Routes not accessible to logged-out users */}
                         <Route element={<RequireAuth/>}>
                             <Route path="/user/profile" element={<UserProfile/>}/>
                         </Route>
