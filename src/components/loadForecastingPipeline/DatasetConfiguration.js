@@ -153,7 +153,7 @@ const DatasetConfiguration = ({
         data.append('multiple', multiSeriesFile)
         data.append('format', format)
 
-        axios.post('/upload/uploadCSVfile/', data, {
+        axios.post('/upload/uploadCSVfile', data, {
             headers: {
                 "Content-Type": "multipart/form-data", "Authorization": `Bearer ${keycloak.token}`
             }
