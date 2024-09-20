@@ -13,10 +13,10 @@ services:
       - '3003:3000'
     stdin_open: true
     networks:
-      - inergy_network
+      - keycloak_net
 #    env_file:
 #      - .env
 
 networks:
- inergy_network:
+ keycloak_net:
    external: true
