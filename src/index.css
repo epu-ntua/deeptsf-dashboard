@@ -34,11 +34,13 @@ code {
 
 /* Homepage */
 .serviceCategoryDescriptionOdd {
-    background: linear-gradient(to right, #97A94D, #B2C561);
+    background: linear-gradient(to right, #0047BB, #41B6E6);
+    /* background: linear-gradient(to right, #97A94D, #B2C561); */
 }
 
 .serviceCategoryDescriptionEven {
-    background: linear-gradient(to right, #B2C561, #97A94D);
+    background: linear-gradient(to right, #41B6E6, #0047BB);
+    /* background: linear-gradient(to right, #B2C561, #97A94D); */
 }
 
 .linkAvatar {
@@ -98,7 +100,8 @@ code {
 }
 
 .fancyButton {
-    background: linear-gradient(to right, #1A88C9, #2AB683);
+    background: linear-gradient(to right, #0047BB, #41B6E6);
+    /* background: linear-gradient(to right, #1A88C9, #2AB683); */
 }
 
 .menuItemActive {

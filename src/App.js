@@ -16,8 +16,8 @@ import ExperimentTracking from "./pages/ExperimentTracking";
 import SystemMonitoring from "./pages/SystemMonitoring";
 
 // Load environment variables
-const primary = process.env.REACT_APP_PRIMARY_COLOR || '#97A94D'; // fallback if env var isn't set
-const secondary = process.env.REACT_APP_SECONDARY_COLOR || '#B2C561';
+const primary = process.env.REACT_APP_PRIMARY_COLOR || '#0047BB'; // '#97A94D'; // fallback if env var isn't set
+const secondary = process.env.REACT_APP_SECONDARY_COLOR || '#41B6E6'; // '#B2C561';
 
 // Dashboard theme setup here
 const theme = createTheme({

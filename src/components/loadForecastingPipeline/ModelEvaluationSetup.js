@@ -22,7 +22,7 @@ const ModelEvaluationSetup = ({
                     <Grid item xs={12} md={6}>
                         <Stack direction="row" spacing={2} sx={{alignItems: 'center'}}>
                             <LineAxisOutlinedIcon fontSize="large"
-                                                  sx={{width: '60px', height: '60px', color: '#A1B927', ml: 2, my: 1}}/>
+                                                  sx={{width: '60px', height: '60px', color: '#0047BB', ml: 2, my: 1}}/>
                             <Typography variant={'h5'} color={'inherit'} sx={{width: '100%'}}>Choose Backtest Forecast
                                 Horizon</Typography>
                         </Stack>

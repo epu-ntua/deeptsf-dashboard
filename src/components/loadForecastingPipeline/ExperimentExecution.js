@@ -104,12 +104,12 @@ const ExperimentExecution = ({
                     <Grid item xs={12} md={6}>
                         <Stack direction="row" spacing={2} sx={{alignItems: 'center'}}>
                             <TerminalIcon fontSize="large"
-                                          sx={{width: '60px', height: '60px', color: '#A1B927', ml: 2, my: 1}}/>
+                                          sx={{width: '60px', height: '60px', color: '', ml: 2, my: 1}}/>
                             <Typography variant={'h5'} color={'inherit'} sx={{width: '100%'}}>Run the model</Typography>
                         </Stack>
                     </Grid>
                     <Grid item xs={12} md={6} display={'flex'}>
-                        <Button variant={'contained'} component={'span'} size={'large'} color={'success'}
+                        <Button variant={'contained'} component={'span'} size={'large'} color={'primary'}
                                 sx={{ml: 'auto'}} fullWidth
                                 endIcon={<ChevronRight/>} onClick={handleExecute}
                                 disabled={(!imputationMethod || executionLoading || !uploadSuccess || !experimentResolution || !dateVal || !dateTest || !dateEnd || !experimentName || !model || chosenConfiguration === '' || !forecastHorizon) && !ucChosen}
@@ -125,7 +125,7 @@ const ExperimentExecution = ({
                         <Grid item xs={12} md={6}>
                             <Stack direction="row" spacing={2} sx={{alignItems: 'center'}}>
                                 <DoneAllIcon fontSize="large"
-                                             sx={{width: '60px', height: '60px', color: '#A1B927', ml: 2, my: 1}}/>
+                                             sx={{width: '60px', height: '60px', color: '', ml: 2, my: 1}}/>
                                 <Typography variant={'h5'} color={'inherit'} sx={{width: '100%'}}>Results</Typography>
                             </Stack>
                         </Grid>

@@ -10,7 +10,7 @@ const FooterContent = () => {
             <Grid container spacing={0}
                   alignItems="center" justifyItems={'center'}>
                 <Grid item xs={12} md={4}>
-                    <Typography fontSize={'small'}>Copyright I-NERGY Consortium @{new Date().getFullYear()} All rights reserved</Typography>
+                    <Typography fontSize={'small'}>Copyright ICCS @{new Date().getFullYear()} All rights reserved</Typography>
                 </Grid>
 
                 <Box item xs={12} md={1} marginX={'auto'} alignItems="center" justifyItems={'center'}>

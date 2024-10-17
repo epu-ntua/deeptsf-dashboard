@@ -150,7 +150,7 @@ const ByEvaluationMetric = () => {
                 <Grid item xs={12} md={6}>
                     <Stack direction="row" spacing={2} sx={{alignItems: 'center'}}>
                         <ModelTrainingIcon fontSize="large"
-                                           sx={{width: '60px', height: '60px', color: '#A1B927', ml: 2, my: 1}}/>
+                                           sx={{width: '60px', height: '60px', color: '#0047BB', ml: 2, my: 1}}/>
                         <Typography component={'span'} variant={'h5'} color={'inherit'} sx={{width: '100%'}}>Experiment name</Typography>
                     </Stack>
                 </Grid>
@@ -174,7 +174,7 @@ const ByEvaluationMetric = () => {
                 <Grid item xs={12} md={6}>
                     <Stack direction="row" spacing={2} sx={{alignItems: 'center'}}>
                         <DataUsageIcon fontSize="large"
-                                       sx={{width: '60px', height: '60px', color: '#A1B927', ml: 2, my: 1}}/>
+                                       sx={{width: '60px', height: '60px', color: '#0047BB', ml: 2, my: 1}}/>
                         <Typography component={'span'} variant={'h5'} color={'inherit'} sx={{width: '100%'}}>Main evaluation
                             metric</Typography>
                     </Stack>
@@ -199,7 +199,7 @@ const ByEvaluationMetric = () => {
                 <Grid item xs={12} md={6}>
                     <Stack direction="row" spacing={2} sx={{alignItems: 'center'}}>
                         <NumbersIcon fontSize="large"
-                                     sx={{width: '60px', height: '60px', color: '#A1B927', ml: 2, my: 1}}/>
+                                     sx={{width: '60px', height: '60px', color: '#0047BB', ml: 2, my: 1}}/>
                         <Typography component={'span'} variant={'h5'} color={'inherit'} sx={{width: '100%'}}>Number of evaluation
                             samples</Typography>
                     </Stack>
@@ -221,7 +221,7 @@ const ByEvaluationMetric = () => {
                     >
                         <Typography variant={'subtitle1'}>DETAILS ON MLFLOW</Typography>
                     </Button>}
-                    <Button variant={'contained'} component={'span'} size={'large'} color={'success'}
+                    <Button variant={'contained'} component={'span'} size={'large'} color={'primary'}
                             onClick={() => fetchMetrics(experimentChosen, metricChosen)}
                             endIcon={<ChevronRight/>}><Typography variant={'subtitle1'}>LOAD
                         METRICS</Typography></Button>

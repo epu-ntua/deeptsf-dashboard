@@ -109,7 +109,7 @@ const CpuUsageBarChart = () => {
     return (
         <>
             <Accordion expanded={expanded} onChange={handleChange('panel1')} elevation={3} data-testid={'systemMonitoringCpuUsage'}>
-                <AccordionSummary className={'accordion'} sx={{backgroundColor: '#AABD5B'}}
+                <AccordionSummary className={'accordion'} sx={{backgroundColor: '#0047BB'}}
                                   expandIcon={<ExpandMoreIcon/>}
                                   aria-controls="panel1bh-content"
                                   id="panel1bh-header"

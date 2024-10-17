@@ -112,7 +112,7 @@ export default function Layout({children}) {
     const navigate = useNavigate();
     const location = useLocation()
 
-    const menuItems = [{text: 'Homepage', icon: <HomeOutlinedIcon color="secondary"/>, path: "/",},]
+    const menuItems = [{text: 'Homepage', icon: <HomeOutlinedIcon color="primary"/>, path: "/",},]
 
     const [menu, setMenu] = useState(menuItems)
 
@@ -136,7 +136,7 @@ export default function Layout({children}) {
             menuItems.push(
                 {
                     text: 'Codeless Forecasting Pipeline',
-                    icon: <UpdateIcon color="secondary"/>,
+                    icon: <UpdateIcon color="primary"/>,
                     path: "/codeless-forecast"
                 },
             )
@@ -146,7 +146,7 @@ export default function Layout({children}) {
         if ((roles?.length > 0 && (roles.includes('energy_engineer') || roles.includes('inergy_admin'))) || !authenticationEnabled) {
             menuItems.push({
                 text: 'Experiment Tracking',
-                icon: <QueryStatsIcon color="secondary"/>,
+                icon: <QueryStatsIcon color="primary"/>,
                 path: "/experiment-tracking"
             })
             setMenu(menuItems)
@@ -155,7 +155,7 @@ export default function Layout({children}) {
         if (roles?.includes('inergy_admin') || !authenticationEnabled) {
             menuItems.push({
                 text: 'System Monitoring',
-                icon: <MonitorHeartIcon color="secondary"/>,
+                icon: <MonitorHeartIcon color="primary"/>,
                 path: "/monitoring"
             })
             setMenu(menuItems)
@@ -194,7 +194,7 @@ export default function Layout({children}) {
                             sx={{mr: 2, color: 'white', ...(drawerOpen && {display: 'none'})}}>
                             <MenuIcon/>
                         </IconButton>
-                        <h3 style={{color: 'white'}}>I-NERGY DeepTSF</h3>
+                        <h3 style={{color: 'white'}}>DeepTSF</h3>
                         {keycloak.authenticated === true && <React.Fragment>
                             <Typography style={{
                                 marginLeft: 'auto',
@@ -216,8 +216,8 @@ export default function Layout({children}) {
                     open={drawerOpen}>
                     <DrawerHeader>
                         {/* Drawer top left banner logo */}
-                        <img src="/images/i-nergy_logo_trans_back.png" alt="" height={'60px'}
-                             style={{objectFit: 'cover'}}/>
+                        <img src="/images/logo-deeptsf.png" alt="" height={'60px'}
+                             style={{objectFit: 'cover', padding: '10px 0'}}/>
                         <IconButton onClick={handleDrawerClose}>
                             {theme.direction === 'ltr' ? <ChevronLeftIcon/> : <ChevronRightIcon/>}
                         </IconButton>

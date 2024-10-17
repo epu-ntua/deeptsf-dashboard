@@ -70,7 +70,7 @@ const ByRunId = () => {
                 <Grid item xs={12} md={6}>
                     <Stack direction="row" spacing={2} sx={{alignItems: 'center'}}>
                         <SettingsIcon fontSize="large"
-                                     sx={{width: '60px', height: '60px', color: '#A1B927', ml: 2, my: 1}}/>
+                                     sx={{width: '60px', height: '60px', color: '#0047BB', ml: 2, my: 1}}/>
                         <Typography component={'span'} variant={'h5'} color={'inherit'} sx={{width: '100%'}}>Insert desired Run
                             ID</Typography>
                     </Stack>
@@ -86,7 +86,7 @@ const ByRunId = () => {
                 <Grid item xs={12} md={6}>
                     <Stack direction="row" spacing={2} sx={{alignItems: 'center'}}>
                         <NumbersIcon fontSize="large"
-                                     sx={{width: '60px', height: '60px', color: '#A1B927', ml: 2, my: 1}}/>
+                                     sx={{width: '60px', height: '60px', color: '#0047BB', ml: 2, my: 1}}/>
                         <Typography component={'span'} variant={'h5'} color={'inherit'} sx={{width: '100%'}}>Number of evaluation
                             samples</Typography>
                     </Stack>
@@ -101,7 +101,7 @@ const ByRunId = () => {
                 </Grid>
 
                 <Stack sx={{ml: 'auto', my: 2}} direction={'row'} spacing={2}>
-                    <Button variant={'contained'} component={'span'} size={'large'} color={'success'}
+                    <Button variant={'contained'} component={'span'} size={'large'} color={'primary'}
                             disabled={!runID}
                             endIcon={<ChevronRight/>} onClick={() => fetchMetrics(runID, limit)}>
                         <Typography component={'span'} variant={'subtitle1'}>LOAD METRICS</Typography>

@@ -84,7 +84,7 @@ const UserProfile = () => {
                             </Grid>
 
                             <Box item md={3} xs={6} display={'flex'} justifyContent={'center'} alignContent={'center'}>
-                                <FiberManualRecordIcon sx={{marginRight: '5px'}} color={'success'}
+                                <FiberManualRecordIcon sx={{marginRight: '5px'}} color={'primary'}
                                                        style={{marginTop: '5%'}}/>
                                 <Typography variant={'h6'}
                                             sx={{color: 'text.secondary', fontWeight: 'bold'}}>{initialized ? keycloak.tokenParsed.preferred_username : ''}

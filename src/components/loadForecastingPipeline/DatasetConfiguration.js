@@ -297,7 +297,7 @@ const DatasetConfiguration = ({
                                                                     sx={{
                                                                         width: '60px',
                                                                         height: '60px',
-                                                                        color: '#A1B927',
+                                                                        color: '#0047BB',
                                                                         mr: '-8px',
                                                                         my: 1
                                                                     }}/>
@@ -370,7 +370,7 @@ const DatasetConfiguration = ({
                                        sx={{alignItems: 'center', justifyContent: 'end', mb: 2}}>
                                     {newFile && !uploadSuccess &&
                                         <Button variant={'contained'} component={'span'} size={'large'}
-                                                color={'success'}
+                                                color={'primary'}
                                                 sx={{ml: 'auto'}} disabled={executionLoading}
                                                 endIcon={<UploadFileOutlinedIcon/>} onClick={handleUploadFile}>
                                             Upload file
@@ -395,7 +395,7 @@ const DatasetConfiguration = ({
                                                          sx={{
                                                              width: '60px',
                                                              height: '60px',
-                                                             color: '#A1B927',
+                                                             color: '#0047BB',
                                                              ml: 2,
                                                              my: 1
                                                          }}/>
@@ -430,7 +430,7 @@ const DatasetConfiguration = ({
                                                      sx={{
                                                          width: '60px',
                                                          height: '60px',
-                                                         color: '#A1B927',
+                                                         color: '#0047BB',
                                                          ml: 2,
                                                          my: 1
                                                      }}/>
@@ -469,7 +469,7 @@ const DatasetConfiguration = ({
                     <Grid item xs={12} md={8}>
                         <Stack direction="row" spacing={2} sx={{alignItems: 'center'}}>
                             <DataThresholdingIcon fontSize="large"
-                                                  sx={{width: '60px', height: '60px', color: '#A1B927', ml: 2, my: 1}}/>
+                                                  sx={{width: '60px', height: '60px', color: '#0047BB', ml: 2, my: 1}}/>
                             <Typography variant={'h5'} color={'inherit'} sx={{width: '100%'}}>
                                 Timeseries Resolution
                             </Typography>
@@ -505,7 +505,7 @@ const DatasetConfiguration = ({
                         <Grid item xs={12} md={4}>
                             <Stack direction="row" spacing={2} sx={{alignItems: 'center'}}>
                                 <SchemaIcon fontSize="large"
-                                            sx={{width: '60px', height: '60px', color: '#A1B927', ml: 2, my: 1}}/>
+                                            sx={{width: '60px', height: '60px', color: '#0047BB', ml: 2, my: 1}}/>
                                 <Typography variant={'h5'} color={'inherit'} sx={{width: '100%'}}>
                                     Select Aggregation Method
                                 </Typography>
@@ -541,7 +541,7 @@ const DatasetConfiguration = ({
                     <Grid item xs={12} md={10}>
                         <Stack direction="row" spacing={2} sx={{alignItems: 'center'}}>
                             <SettingsSuggestIcon fontSize="large"
-                                                 sx={{width: '60px', height: '60px', color: '#A1B927', ml: 2, my: 1}}/>
+                                                 sx={{width: '60px', height: '60px', color: '#0047BB', ml: 2, my: 1}}/>
                             <Typography variant={'h5'} color={'inherit'} sx={{width: '100%'}}>
                                 Outliers detection
                             </Typography>
@@ -567,7 +567,7 @@ const DatasetConfiguration = ({
                     <Grid item xs={12} md={8}>
                         <Stack direction="row" spacing={2} sx={{alignItems: 'center'}}>
                             <AutoGraphIcon fontSize="large"
-                                           sx={{width: '60px', height: '60px', color: '#A1B927', ml: 2, my: 1}}/>
+                                           sx={{width: '60px', height: '60px', color: '#0047BB', ml: 2, my: 1}}/>
                             <Typography variant={'h5'} color={'inherit'} sx={{width: '100%'}}>
                                 Ιnterpolation Method
                             </Typography>
@@ -606,7 +606,7 @@ const DatasetConfiguration = ({
                     <Grid item xs={12} md={6}>
                         <Stack direction="row" spacing={2} sx={{alignItems: 'center'}}>
                             <DateRangeIcon fontSize="large"
-                                           sx={{width: '60px', height: '60px', color: '#A1B927', ml: 2, my: 1}}/>
+                                           sx={{width: '60px', height: '60px', color: '#0047BB', ml: 2, my: 1}}/>
                             <Typography variant={'h5'} color={'inherit'} sx={{width: '100%'}}>Dataset Split</Typography>
                         </Stack>
                     </Grid>
