@@ -1,5 +1,5 @@
 import React, {useEffect, useState, useRef} from 'react';
-import axios from "axios";
+import axiosInstance from "../../api/axios";
 
 import Accordion from "@mui/material/Accordion";
 import AccordionSummary from "@mui/material/AccordionSummary";
@@ -39,9 +39,8 @@ const MemoryUsageBars = () => {
     };
 
     const getMemoryUsageData = () => {
-        axios.get('/system_monitoring/get_memory_usage')
+        axiosInstance.get('/system_monitoring/get_memory_usage')
             .then(response => {
-                console.log('aaxaxaxaxa')
                 memoryCount++
                 setVmHigh(response.data.progressbar_1.high)
                 setVmLow(response.data.progressbar_1.low)
@@ -53,6 +52,7 @@ const MemoryUsageBars = () => {
                 setMemoryUsageError(false)
             })
             .catch(error => {
+                console.error('Memory usage error:', error);
                 memoryCount++
                 setMemoryUsageError(true)
                 setLoading(false)

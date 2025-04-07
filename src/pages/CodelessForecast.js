@@ -1,5 +1,5 @@
 import React, {useEffect, useState} from 'react';
-import axios from "axios";
+import axiosInstance from "../api/axios";
 import {Link, useNavigate} from "react-router-dom";
 
 // import {modelConfigurations} from "../modelConfigurations";
@@ -39,11 +39,33 @@ const CodelessForecast = () => {
     const authenticationEnabled = process.env.REACT_APP_AUTH === "True"
     const navigate = useNavigate();
 
-    // Comment out the following line FOR TESTING
-    const [allowed, setAllowed] = useState(null)
+    const [allowed, setAllowed] = useState(null);
 
-    // Uncomment the following line FOR TESTING
-    // const [allowed, setAllowed] = useState(true)
+    useEffect(() => {
+        if (initialized) {
+            // Check auth method
+            const authMethod = localStorage.getItem('authMethod');
+            
+            if (authMethod === 'virto') {
+                // Virto users have inergy_admin role which includes data_scientist permissions
+                setAllowed(true);
+            } else if (keycloak.authenticated) {
+                // Check for relevant roles in Keycloak
+                const roles = keycloak.realmAccess?.roles || [];
+                if (roles.includes('data_scientist') || roles.includes('inergy_admin')) {
+                    setAllowed(true);
+                } else {
+                    navigate('/');
+                }
+            } else {
+                navigate('/');
+            }
+        }
+
+        if (!authenticationEnabled) {
+            setAllowed(true);
+        }
+    }, [initialized, keycloak.authenticated, keycloak.realmAccess?.roles, navigate, authenticationEnabled]);
 
     const [newFile, setNewFile] = useState()
     const [dayFirst, setDayFirst] = useState(false)
@@ -90,10 +112,12 @@ const CodelessForecast = () => {
 
     useEffect(() => {
         if (initialized) {
-            let roles = keycloak.realmAccess.roles
-            if ((roles.includes('data_scientist') || roles.includes('inergy_admin'))) {
-                setAllowed(true)
-            } else navigate('/')
+            if (keycloak.realmAccess) {
+                let roles = keycloak.realmAccess.roles
+                if ((roles.includes('data_scientist') || roles.includes('inergy_admin'))) {
+                    setAllowed(true)
+                } else navigate('/')
+            }
         }
 
         if (!authenticationEnabled) {
@@ -103,11 +127,13 @@ const CodelessForecast = () => {
 
     useEffect(() => {
         if ((initialized && experimentResolution) || (!authenticationEnabled && experimentResolution)) {
-            axios.get(`/models/get_model_names/${experimentResolution}/${multiSeriesFile}`)
+            axiosInstance.get(`/models/get_model_names/${experimentResolution}/${multiSeriesFile}`)
                 .then(response => {
                     setModels(response.data)
                 })
-                .catch(error => console.log('error'))
+                .catch(error => {
+                    console.error('Model names error:', error);
+                })
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [experimentResolution])

@@ -91,24 +91,33 @@ const ExperimentTracking = () => {
     const authenticationEnabled = process.env.REACT_APP_AUTH === "True"
     const navigate = useNavigate();
 
-    // Comment out the following line FOR TESTING
     const [allowed, setAllowed] = useState(null)
-
-    // Uncomment the following line FOR TESTING
-    // const [allowed, setAllowed] = useState(true)
 
     useEffect(() => {
         if (initialized) {
-            let roles = keycloak.realmAccess.roles
-            if (roles.includes('energy_engineer') || roles.includes('inergy_admin')) {
-                setAllowed(true)
-            } else navigate('/')
+            // Check auth method
+            const authMethod = localStorage.getItem('authMethod');
+            
+            if (authMethod === 'virto') {
+                // Virto users have inergy_admin role which includes energy_engineer permissions
+                setAllowed(true);
+            } else if (keycloak.authenticated) {
+                // Check for relevant roles in Keycloak
+                const roles = keycloak.realmAccess?.roles || [];
+                if (roles.includes('energy_engineer') || roles.includes('inergy_admin')) {
+                    setAllowed(true);
+                } else {
+                    navigate('/');
+                }
+            } else {
+                navigate('/');
+            }
         }
 
         if (!authenticationEnabled) {
-            setAllowed(true)
+            setAllowed(true);
         }
-    }, [initialized])
+    }, [initialized, keycloak.authenticated, keycloak.realmAccess?.roles, navigate, authenticationEnabled])
 
     const [value, setValue] = useState(0);
 

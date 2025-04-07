@@ -3,6 +3,7 @@ import React from 'react';
 import HomepageItemFullWidth from "../components/homepage/HomepageItemFullWidth";
 import {servicesHomepage} from "../components/homepage/servicesHomepage";
 import {useKeycloak} from "@react-keycloak/web";
+import LandingPage from './LandingPage'; // Import the new LandingPage component
 
 const Homepage = () => {
     const {keycloak, initialized} = useKeycloak()
@@ -23,16 +24,24 @@ const Homepage = () => {
         return false;
     }
 
+    if (!initialized) {
+        return <div>Loading...</div>;
+    }
+
     return (
         <div data-testid={"homepageOverall"}>
-            {servicesHomepage.map((service, index) => (
-                <div data-testid={"homepageItem"}>
-                    <HomepageItemFullWidth title={service.title} description={service.description} icon={service.icon}
-                                           image={service.image} link={service.link} index={index} key={service.id}
-                                           showLink={initialized ? findCommonElement(keycloak.realmAccess.roles, service.roles) : false}
-                    />
-                </div>
-            ))}
+            {keycloak.authenticated ? (
+                servicesHomepage.map((service, index) => (
+                    <div data-testid={"homepageItem"}>
+                        <HomepageItemFullWidth title={service.title} description={service.description} icon={service.icon}
+                                               image={service.image} link={service.link} index={index} key={service.id}
+                                               showLink={initialized ? findCommonElement(keycloak.realmAccess.roles, service.roles) : false}
+                        />
+                    </div>
+                ))
+            ) : (
+                <LandingPage /> // Render the landing page for non-authenticated users
+            )}
         </div>
     );
 }

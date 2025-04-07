@@ -16,8 +16,8 @@ import ExperimentTracking from "./pages/ExperimentTracking";
 import SystemMonitoring from "./pages/SystemMonitoring";
 
 // Load environment variables
-const primary = process.env.REACT_APP_PRIMARY_COLOR || '#0047BB'; // '#97A94D'; // fallback if env var isn't set
-const secondary = process.env.REACT_APP_SECONDARY_COLOR || '#41B6E6'; // '#B2C561';
+const primary = '#0047BB'; // '#97A94D'; // fallback if env var isn't set
+const secondary = '#41B6E6'; // '#B2C561';
 
 // Dashboard theme setup here
 const theme = createTheme({
@@ -29,25 +29,44 @@ const theme = createTheme({
             main: secondary
         },
         barBackground: {
-            main: `linear-gradient(to right, ${primary}, ${secondary})`
-        }
+            main: primary
+        },
+        success: {
+            main: '#4DAF4A'
+        },
+        warning: {
+            main: '#F2C94C'
+        },
+        error: {
+            main: '#EB5757'
+        },
+        info: {
+            main: '#56CCF2'
+        },
     },
-    typography: {
-        fontFamily: [
-            'Poppins',
-            'Roboto',
-        ].join(','),
-    }
 });
 
 function App() {
-    const authenticationEnabled = process.env.REACT_APP_AUTH === "True";
     const {keycloak} = useKeycloak();
     
-    // Use environment variable for backend URL
-    // axios.defaults.baseURL = process.env.REACT_APP_BACKEND_BASE_URL || 'http://localhost:8081';
+    // Remove CORS headers from default axios config
     axios.defaults.baseURL = process.env.REACT_APP_BACKEND_BASE_URL;
-    axios.defaults.headers.common['Authorization'] = `Bearer ${keycloak.token}` || '';
+    axios.defaults.withCredentials = true;
+    axios.defaults.headers.common['Content-Type'] = 'application/json';
+    
+    // Set authorization header based on authentication method
+    if (keycloak.authenticated && keycloak.token) {
+        axios.defaults.headers.common['Authorization'] = `Bearer ${keycloak.token}`;
+        // Store Keycloak token in localStorage for consistent access across the app
+        localStorage.setItem('keycloakToken', keycloak.token);
+        localStorage.setItem('authMethod', 'keycloak');
+    } else {
+        const virtoToken = localStorage.getItem('virtoToken');
+        const authMethod = localStorage.getItem('authMethod');
+        if (authMethod === 'virto' && virtoToken) {
+            axios.defaults.headers.common['Authorization'] = `Bearer ${virtoToken}`;
+        }
+    }
 
     return (
         <ThemeProvider theme={theme}>

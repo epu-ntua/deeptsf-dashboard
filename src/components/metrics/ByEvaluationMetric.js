@@ -90,38 +90,48 @@ const ByEvaluationMetric = () => {
         setLoadingLineChart(true)
         axios.get(`/results/get_best_run_id_by_mlflow_experiment/${experiment}/${metric ? metric : 'mape'}`)
             .then(response => {
-                setBestRun(response.data)
+                setBestRun(response.data);
                 // Get data for Bar Chart
                 axios.get(`/results/get_metric_list/${run ? run : response.data}`)
                     .then(response => {
-                        setBarChartLabels(response.data.labels)
-                        setBarChartValues(response.data.data)
-                        setLoadingBarChart(false)
+                        const data = response.data;
+                        if (Array.isArray(data.labels) && Array.isArray(data.data)) {
+                            setBarChartLabels(data.labels);
+                            setBarChartValues(data.data);
+                        } else {
+                            setNoBarChart(true);
+                        }
+                        setLoadingBarChart(false);
                     })
                     .catch(error => {
-                        setLoadingBarChart(false)
-                        setNoBarChart(true)
-                    })
+                        setLoadingBarChart(false);
+                        setNoBarChart(true);
+                    });
 
                 // Get data for Line Chart
                 axios.get(`/results/get_forecast_vs_actual/${run ? run : response.data}/n_samples/${limit ? limit : 200}`)
                     .then(response => {
-                        setLineChartLabels(response.data.actual.index)
-                        setLineChartFirstValues(response.data.actual.data)
-                        setLineChartSecondValues(response.data.forecast.data)
-                        setLoadingLineChart(false)
+                        const data = response.data;
+                        if (Array.isArray(data.actual.index) && Array.isArray(data.actual.data) && Array.isArray(data.forecast.data)) {
+                            setLineChartLabels(data.actual.index);
+                            setLineChartFirstValues(data.actual.data);
+                            setLineChartSecondValues(data.forecast.data);
+                        } else {
+                            setNoLineChart(true);
+                        }
+                        setLoadingLineChart(false);
                     })
                     .catch(error => {
-                        setLoadingLineChart(false)
-                        setNoLineChart(true)
-                    })
+                        setLoadingLineChart(false);
+                        setNoLineChart(true);
+                    });
             })
             .catch(error => {
-                setLoadingBarChart(false)
-                setLoadingLineChart(false)
-                setNoBarChart(true)
-                setNoLineChart(true)
-            })
+                setLoadingBarChart(false);
+                setLoadingLineChart(false);
+                setNoBarChart(true);
+                setNoLineChart(true);
+            });
     }
 
     useEffect(() => {

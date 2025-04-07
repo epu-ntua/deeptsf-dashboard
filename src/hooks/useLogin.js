@@ -1,20 +1,18 @@
 import {useState} from "react";
 import {useNavigate} from "react-router-dom";
-import axios from 'axios'
+import axios from 'axios';
 import qs from 'qs';
-// import https from 'https'
-
 import useAuthContext from "./useAuthContext";
 
 export const useLogin = () => {
-    const navigate = useNavigate()
-    const [error, setError] = useState(null)
-    const [isLoading, setIsLoading] = useState(null)
-    const {dispatch} = useAuthContext()
+    const navigate = useNavigate();
+    const [error, setError] = useState(null);
+    const [isLoading, setIsLoading] = useState(null);
+    const {dispatch} = useAuthContext();
 
     const login = (username, password) => {
-        setError(false)
-        setIsLoading(true)
+        setError(false);
+        setIsLoading(true);
 
         let credentials = qs.stringify({
             client_id: 'ntua-test-client',
@@ -30,8 +28,12 @@ export const useLogin = () => {
             },
         })
             .then(response => {
-                const accessToken = response.data?.access_token
-                localStorage.setItem('user', JSON.stringify({username, password, accessToken}))
+                const accessToken = response.data?.access_token;
+                
+                // Store token in localStorage for axios
+                localStorage.setItem('keycloakToken', accessToken);
+                localStorage.setItem('authMethod', 'keycloak');
+                localStorage.setItem('user', JSON.stringify({username, accessToken}));
 
                 // Fetch user's roles
                 axios.post('https://oblachek.eu:8443/realms/inergy/protocol/openid-connect/userinfo', null, {
@@ -41,28 +43,40 @@ export const useLogin = () => {
                     },
                 })
                     .then(response => {
-                        // save the user to local storage
-                        localStorage.setItem('roles', response.data.realm_access.roles)
+                        const roles = response.data.realm_access.roles;
+                        
+                        // Save roles to local storage as JSON string
+                        localStorage.setItem('roles', JSON.stringify(roles));
 
-                        // update the auth context
+                        // Update auth context
                         dispatch({
                             type: 'LOGIN',
-                            payload: {user: {username, password, accessToken}, roles: response.data.realm_access.roles}
-                        })
+                            payload: {
+                                user: {username, accessToken}, 
+                                roles: roles,
+                                authMethod: 'keycloak',
+                                token: accessToken
+                            }
+                        });
 
-                        setIsLoading(false)
-                        navigate('/')
+                        // Update axios default header
+                        axios.defaults.headers.common['Authorization'] = `Bearer ${accessToken}`;
+
+                        setIsLoading(false);
+                        navigate('/');
                     })
                     .catch(error => {
-                        setError(true)
-                        setIsLoading(false)
-                    })
+                        console.error('Error fetching user info:', error);
+                        setError(true);
+                        setIsLoading(false);
+                    });
             })
             .catch(error => {
-                setError(true)
-                setIsLoading(false)
-            })
-    }
+                console.error('Login error:', error);
+                setError(true);
+                setIsLoading(false);
+            });
+    };
 
-    return {login, isLoading, error}
-}
+    return {login, isLoading, error};
+};

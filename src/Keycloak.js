@@ -4,28 +4,40 @@ const createKeycloakInstance = (enabled) => {
     if (enabled) {
         console.log(process.env.REACT_APP_KEYCLOAK_REALM)
 
-        return new Keycloak({
+        const keycloakInstance = new Keycloak({
             realm: process.env.REACT_APP_KEYCLOAK_REALM,
             url: process.env.REACT_APP_KEYCLOAK_URL,
             clientId: process.env.REACT_APP_KEYCLOAK_CLIENT_ID
         });
 
+        // Add event listeners for token refresh and expiration
+        keycloakInstance.onTokenExpired = () => {
+            console.log('Keycloak token expired');
+            keycloakInstance.updateToken(30).then(refreshed => {
+                if (refreshed) {
+                    console.log('Token was successfully refreshed');
+                    localStorage.setItem('keycloakToken', keycloakInstance.token);
+                } else {
+                    console.log('Token is still valid');
+                }
+            }).catch(() => {
+                console.error('Failed to refresh token, logging out...');
+                keycloakInstance.logout();
+            });
+        };
 
-
-        // Keycloak client for production
-        // return new Keycloak({
-        //     "realm": "inergy",
-        //     "url": "https://oblachek.eu:8443/",
-        //     "clientId": "load-forecasting-sso"
-        // })
+        return keycloakInstance;
     } else {
         // Create a dummy Keycloak instance that doesn't do authentication
         const dummyKeycloak = {
             init: () => Promise.resolve(),
-            login: () => {
-            },
-            logout: () => {
-            },
+            login: () => {},
+            logout: () => {},
+            authenticated: false,
+            realmAccess: { roles: [] },
+            token: null,
+            onTokenExpired: () => {},
+            updateToken: () => Promise.resolve(false),
             // Add other Keycloak methods you may use as empty functions
         };
 

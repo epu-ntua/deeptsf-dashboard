@@ -1,5 +1,7 @@
 import React, {useState, useEffect} from 'react';
 import {useLogin} from "../../hooks/useLogin";
+import { useVirtoLogin } from "../../hooks/useVirtoLogin";
+import { useAuthContext } from "../../context/AuthContext";
 
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
@@ -37,7 +39,10 @@ const useStyles = {
 
 const SignIn = () => {
     const {login, error, isLoading} = useLogin()
+    const { login: virtoLogin, error: virtoError, isLoading: virtoLoading } = useVirtoLogin();
     const classes = useStyles;
+    const [isVirtoLoggedIn, setIsVirtoLoggedIn] = useState(false);
+    const { dispatch } = useAuthContext();
 
     // Value and handlers for toggle visibility effect in password fields
     const [showPassword, setShowPassword] = useState(false);
@@ -75,7 +80,14 @@ const SignIn = () => {
         login(username, password)
     }
 
-    const checkForm = (e) => {
+    const handleVirtoSignIn = (username, password) => {
+        virtoLogin(username, password).then(() => {
+            setIsVirtoLoggedIn(true);
+            dispatch({ type: 'SET_VIRTO_LOGGED_IN', payload: true });
+        });
+    };
+
+    const checkForm = (e, loginMethod) => {
         e.preventDefault()
 
         // Initialize this value in order to enable field checks on change
@@ -86,7 +98,13 @@ const SignIn = () => {
         checkPassword()
 
         // If all fields are valid, proceed to Sign In
-        if (username !== '' && password !== '') handleSignIn(username, password)
+        if (username !== '' && password !== '') {
+            if (loginMethod === 'keycloak') {
+                handleSignIn(username, password);
+            } else if (loginMethod === 'virto') {
+                handleVirtoSignIn(username, password);
+            }
+        }
     }
 
     // Check validity of email field after the first Sign In attempt (user has pressed Sign In button)
@@ -156,8 +174,10 @@ const SignIn = () => {
                             />
                             {error &&
                                 <ErrorMessage message="The credentials you provided do not match. Please try again."/>}
+                            {virtoError && <ErrorMessage message="Virto Commerce login failed. Please try again." />}
                             {isLoading &&
                                 <Box mt={3} display="flex" justifyContent="center" alignItems="center"><Loading/></Box>}
+                            {virtoLoading && <Box mt={3} display="flex" justifyContent="center" alignItems="center"><Loading /></Box>}
                             <Box sx={{mt: 3, mb: 2}}>
                                 <Button
                                     style={{color: 'white'}}
@@ -166,9 +186,20 @@ const SignIn = () => {
                                     variant="contained"
                                     color="secondary"
                                     className={classes.submit}
-                                    onClick={e => checkForm(e)}
+                                    onClick={e => checkForm(e, 'keycloak')}
                                 >
-                                    <Typography>Sign In</Typography>
+                                    <Typography>Sign In with Keycloak</Typography>
+                                </Button>
+                                <Button
+                                    style={{ color: 'white', marginTop: '10px' }}
+                                    type="submit"
+                                    fullWidth
+                                    variant="contained"
+                                    color="secondary"
+                                    className={classes.submit}
+                                    onClick={e => checkForm(e, 'virto')}
+                                >
+                                    <Typography>Sign In with Virto Commerce</Typography>
                                 </Button>
                             </Box>
                         </form>

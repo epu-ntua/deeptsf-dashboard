@@ -1,6 +1,7 @@
 import React, {useEffect, useState} from 'react';
 import {useKeycloak} from "@react-keycloak/web";
 import axios from "axios";
+import axiosInstance from '../../api/axios';
 
 import Typography from "@mui/material/Typography";
 import Grid from "@mui/material/Grid";
@@ -153,9 +154,10 @@ const DatasetConfiguration = ({
         data.append('multiple', multiSeriesFile)
         data.append('format', format)
 
-        axios.post('/upload/uploadCSVfile', data, {
+        axiosInstance.post('/upload/uploadCSVfile', data, {
             headers: {
-                "Content-Type": "multipart/form-data", "Authorization": `Bearer ${keycloak.token}`
+                "Content-Type": "multipart/form-data", 
+                "Authorization": `Bearer ${keycloak.token || localStorage.getItem('virtoToken')}`
             }
         })
             .then(response => {
@@ -477,14 +479,14 @@ const DatasetConfiguration = ({
                     </Grid>
                     <Grid item xs={12} md={4}>
                         {(uploadSuccess || ucConfirmation) && <FormControl fullWidth>
-                            <InputLabel id="demo-simple-select-label">Dataset Resolution (Minutes)</InputLabel>
+                            <InputLabel id="demo-simple-select-label">Dataset Resolution</InputLabel>
                             <Select
                                 disabled={executionLoading}
                                 fullWidth
                                 labelId="demo-simple-select-label"
                                 id="demo-simple-select"
                                 value={experimentResolution}
-                                label="Dataset Resolution (Minutes)"
+                                label="Dataset Resolution"
                                 onChange={e => setExperimentResolution(e.target.value)}
                             >
                                 {resolutions?.map(resolution => (<MenuItem key={resolution.value}

@@ -1,7 +1,9 @@
-import React, {useEffect, useState} from 'react';
-import {Link, useNavigate, useLocation} from "react-router-dom";
-import useAuthContext from "../../hooks/useAuthContext";
+import React, {useEffect, useState, useMemo} from 'react';
+import {Link, useNavigate, useLocation, Navigate} from "react-router-dom";
+// import useAuthContext from "../../hooks/useAuthContext";
 import {useLogout} from "../../hooks/useLogout";
+import { useVirtoLogin } from "../../hooks/useVirtoLogin";
+import axios from 'axios';
 
 import {styled, useTheme} from '@mui/material/styles';
 import clsx from 'clsx';
@@ -29,6 +31,7 @@ import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import UpdateIcon from '@mui/icons-material/Update';
 import QueryStatsIcon from '@mui/icons-material/QueryStats';
 import MonitorHeartIcon from '@mui/icons-material/MonitorHeart';
+import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
 
 import SignedOutLinks from "./SignedOutLinks";
 import SignedInLinks from "./SignedInLinks";
@@ -37,6 +40,7 @@ import MenuButton from "./MenuButton";
 
 import {appbarMenuButtonItems} from "../../appbarMenuButtonItems";
 import {useKeycloak} from "@react-keycloak/web";
+import VirtoLoginForm from '../VirtoLoginForm';
 
 const drawerWidth = 260;
 
@@ -106,80 +110,177 @@ const DrawerHeader = styled('div')(({theme}) => ({
 
 export default function Layout({children}) {
     const {keycloak, initialized} = useKeycloak();
-    const {logout} = useLogout()
+    const { logout } = useLogout();
+    const { login: virtoLogin, response: virtoResponse, error: virtoError } = useVirtoLogin();
     const classes = useStyles;
     const theme = useTheme();
     const navigate = useNavigate();
-    const location = useLocation()
+    const location = useLocation();
 
-    const menuItems = [{text: 'Homepage', icon: <HomeOutlinedIcon color="primary"/>, path: "/",},]
+    const menuItems = useMemo(() => [{text: 'Homepage', icon: <HomeOutlinedIcon color="primary"/>, path: "/",}], []);
 
-    const [menu, setMenu] = useState(menuItems)
+    const [menu, setMenu] = useState(menuItems);
+    const [showVirtoLoginForm, setShowVirtoLoginForm] = useState(false);
+    const [isAuthenticated, setIsAuthenticated] = useState(false);
+    const [virtoLoginSuccess, setVirtoLoginSuccess] = useState(false);
 
-    const handleSignOut = () => {
-        logout()
-        keycloak.logout()
-        setMenu(menuItems)
-        // navigate('/signin')
-    }
+    const handleSignOut = async () => {
+        // The useLogout hook will handle both authentication methods
+        await logout();
+        setMenu(menuItems);
+        setIsAuthenticated(false);
+        setVirtoLoginSuccess(false);
+    };
+
+    const handleVirtoLogin = () => {
+        const username = prompt("Enter your DeployAI username:");
+        const password = prompt("Enter your DeployAI password:");
+        virtoLogin(username, password).then(() => {
+            console.log("DeployAI Login successful");
+            setVirtoLoginSuccess(true);
+        });
+    };
+
+    const handleVirtoLoginClick = () => {
+        setShowVirtoLoginForm(!showVirtoLoginForm);
+    };
 
     const [drawerOpen, setDrawerOpen] = React.useState(false);
 
     const handleDrawerOpen = () => setDrawerOpen(true);
     const handleDrawerClose = () => setDrawerOpen(false);
 
-    const authenticationEnabled = process.env.REACT_APP_AUTH === "True"
+    const authenticationEnabled = process.env.REACT_APP_AUTH === "True";
 
     useEffect(() => {
-        let roles = keycloak.realmAccess?.roles
-        if ((roles?.length > 0 && (roles.includes('data_scientist') || roles.includes('inergy_admin'))) || !authenticationEnabled) {
-            menuItems.push(
-                {
-                    text: 'Codeless Forecasting Pipeline',
-                    icon: <UpdateIcon color="primary"/>,
-                    path: "/codeless-forecast"
-                },
-            )
-            setMenu(menuItems)
+        // Check authentication status and update state
+        const authMethod = localStorage.getItem('authMethod');
+        const keycloakAuth = keycloak?.authenticated;
+        const virtoAuth = authMethod === 'virto' && localStorage.getItem('virtoToken');
+        
+        if (keycloakAuth || virtoAuth) {
+            setIsAuthenticated(true);
+            setShowVirtoLoginForm(false);
+        } else {
+            setIsAuthenticated(false);
+        }
+        
+        // Build menu based on roles
+        let roles = [];
+        
+        // Handle Virto authentication
+        if (authMethod === 'virto') {
+            // Always use inergy_admin role for Virto users
+            roles = ['inergy_admin'];
+            
+            // Set Virto token for axios requests
+            const virtoToken = localStorage.getItem('virtoToken');
+            if (virtoToken) {
+                axios.defaults.headers.common['Authorization'] = `Bearer ${virtoToken}`;
+            }
+        } 
+        // Handle Keycloak authentication
+        else if (keycloakAuth) {
+            // Get roles directly from Keycloak
+            roles = keycloak.realmAccess?.roles || [];
+            
+            // Set Keycloak token for axios requests
+            if (keycloak.token) {
+                localStorage.setItem('keycloakToken', keycloak.token);
+                axios.defaults.headers.common['Authorization'] = `Bearer ${keycloak.token}`;
+            }
         }
 
-        if ((roles?.length > 0 && (roles.includes('energy_engineer') || roles.includes('inergy_admin'))) || !authenticationEnabled) {
-            menuItems.push({
+        const updatedMenuItems = [...menuItems];
+
+        // Add menu items based on roles
+        if ((roles.includes('data_scientist') || roles.includes('inergy_admin')) || !authenticationEnabled) {
+            updatedMenuItems.push({
+                text: 'Codeless Forecasting Pipeline',
+                icon: <UpdateIcon color="primary"/>,
+                path: "/codeless-forecast"
+            });
+        }
+
+        if ((roles.includes('energy_engineer') || roles.includes('inergy_admin')) || !authenticationEnabled) {
+            updatedMenuItems.push({
                 text: 'Experiment Tracking',
                 icon: <QueryStatsIcon color="primary"/>,
                 path: "/experiment-tracking"
-            })
-            setMenu(menuItems)
+            });
         }
 
-        if (roles?.includes('inergy_admin') || !authenticationEnabled) {
-            menuItems.push({
+        if ((roles.includes('inergy_admin')) || !authenticationEnabled) {
+            updatedMenuItems.push({
                 text: 'System Monitoring',
                 icon: <MonitorHeartIcon color="primary"/>,
                 path: "/monitoring"
-            })
-            setMenu(menuItems)
-        }
+            });
 
-        if ((roles?.length > 0 && (roles.includes('data_scientist') || roles.includes('inergy_admin'))) || !authenticationEnabled) {
-            menuItems.push(
-                {
-                    text: 'MLFlow',
-                    icon: <img src="/images/mlflow_logo.jpg" alt="" width={'25px'} style={{borderRadius: '50%'}}/>,
-                    path: location.pathname + ' ',
-                    link: process.env.REACT_APP_MLFLOW
-                },
-                {
-                    text: 'Workflows',
+            const dagsterEndpoint = process.env.REACT_APP_DAGSTER_ENDPOINT_URL;
+            if (dagsterEndpoint && dagsterEndpoint !== "") {
+                updatedMenuItems.push({
+                    text: 'Dagster Dashboard',
                     icon: <img src="/images/dagster_logo.jpg" alt="" width={'25px'} style={{borderRadius: '50%'}}/>,
                     path: location.pathname + ' ',
                     link: process.env.REACT_APP_DAGSTER_ENDPOINT_URL
-                },
-            )
-            setMenu(menuItems)
+                });
+            }
         }
 
-    }, [initialized])
+        setMenu(updatedMenuItems);
+    }, [keycloak.authenticated, initialized, virtoLoginSuccess, authenticationEnabled, location.pathname, menuItems, keycloak.token, keycloak.realmAccess?.roles]);
+
+    // Process JWT from URL parameters
+    useEffect(() => {
+        const urlParams = new URLSearchParams(window.location.search);
+        const jwtToken = urlParams.get('jwt');
+        if (!jwtToken) {
+            return;
+        }
+        
+        console.log('JWT Token from URL:', jwtToken);
+        axios.post(`${process.env.REACT_APP_BACKEND_BASE_URL}/api/auth`, { jwt: jwtToken }, {
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json'
+            },
+            withCredentials: true
+        })
+        .then(response => {
+            console.log('Authentication response:', response);
+            const data = response.data;
+            // Extract token from data.token; if missing, parse from data.url query parameter.
+            let tokenValue = data.token;
+            if (!tokenValue && data.url) {
+                tokenValue = new URL(data.url).searchParams.get('jwt');
+            }
+            if (!tokenValue) {
+                console.error('JWT token not found in response data', data);
+                return;
+            }
+            // Fallback to user email if username is 'unknown' or missing.
+            let username = data.user?.username;
+            if (!username || username === 'unknown') {
+                username = data.user?.email || 'unknown';
+            }
+            localStorage.setItem('virtoToken', tokenValue);
+            localStorage.setItem('authMethod', 'virto');
+            localStorage.setItem('virtoUsername', username);
+            localStorage.setItem('virtoEmail', data.user?.email || '');
+            const roles = [...(data.user?.roles || []), 'inergy_admin'];
+            localStorage.setItem('virtoRoles', JSON.stringify(roles));
+            setIsAuthenticated(true);
+            console.log('User authenticated:', username);
+            window.location.href = '/user/profile';
+        })
+        .catch(error => {
+            console.error('Error during authentication:', error);
+            if (error.response) {
+                console.error('Error response data:', error.response.data);
+            }
+        });
+    }, []);
 
     return (
         <React.Fragment>
@@ -195,13 +296,17 @@ export default function Layout({children}) {
                             <MenuIcon/>
                         </IconButton>
                         <h3 style={{color: 'white'}}>DeepTSF</h3>
-                        {keycloak.authenticated === true && <React.Fragment>
-                            <Typography style={{
-                                marginLeft: 'auto',
-                                color: 'white'
-                            }}>Welcome, {keycloak?.tokenParsed?.preferred_username}</Typography>
-                            <MenuButton subLinks={appbarMenuButtonItems} signout={handleSignOut}/>
-                        </React.Fragment>}
+                        {keycloak.authenticated === true || localStorage.getItem('authMethod') === 'virto' ? (
+                            <React.Fragment>
+                                <Typography style={{
+                                    marginLeft: 'auto',
+                                    color: 'white'
+                                }}>
+                                    Welcome, {keycloak.authenticated ? keycloak.tokenParsed.preferred_username : localStorage.getItem('virtoUsername')}
+                                </Typography>
+                                <MenuButton subLinks={appbarMenuButtonItems} signout={handleSignOut}/>
+                            </React.Fragment>
+                        ) : null}
                     </Toolbar>
                 </AppBar>
 
@@ -259,9 +364,22 @@ export default function Layout({children}) {
                     <Divider/>
 
                     <List>
-                        {keycloak.authenticated === false && <SignedOutLinks navigate={navigate} location={location}/>}
-                        {keycloak.authenticated === true &&
-                            <SignedInLinks navigate={navigate} location={location} handleSignOut={handleSignOut}/>}
+                        {keycloak.authenticated === false && localStorage.getItem('authMethod') !== 'virto' && <SignedOutLinks navigate={navigate} location={location}/>}
+                        {keycloak.authenticated === true || localStorage.getItem('authMethod') === 'virto' ? (
+                            <SignedInLinks navigate={navigate} location={location} handleSignOut={handleSignOut}/>
+                        ) : null}
+                        {/* Only show DeployAI Login if user is not authenticated through any method */}
+                        {!keycloak.authenticated && localStorage.getItem('authMethod') !== 'virto' && (
+                            <ListItemButton onClick={handleVirtoLoginClick}>
+                                <ListItemIcon>
+                                    <LockOutlinedIcon color="primary" />
+                                </ListItemIcon>
+                                <ListItemText primary="DeployAI Login" />
+                            </ListItemButton>
+                        )}
+                        {showVirtoLoginForm && !keycloak.authenticated && localStorage.getItem('authMethod') !== 'virto' && <VirtoLoginForm />}
+                        {virtoResponse && <Typography>{virtoResponse}</Typography>}
+                        {virtoError && <Typography color="error">{virtoError}</Typography>}
                     </List>
 
                 </Drawer>

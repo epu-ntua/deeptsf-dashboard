@@ -8,7 +8,7 @@ import ChevronRight from "@mui/icons-material/ChevronRight";
 import CircularProgress from "@mui/material/CircularProgress";
 import DoneAllIcon from "@mui/icons-material/DoneAll";
 import Container from "@mui/material/Container";
-import axios from "axios";
+import axiosInstance from "../../api/axios";
 
 const ExperimentExecution = ({
                                  executionLoading,
@@ -82,14 +82,14 @@ const ExperimentExecution = ({
             payload.uc = 6
         }
 
-        axios.post('/experimentation_pipeline/run_all', payload)
+        axiosInstance.post('/experimentation_pipeline/run_all', payload)
             .then(response => {
                 setExecutionSuccess(true)
                 setExecutionFailure(false)
                 setExecutionLoading(false)
             })
             .catch(error => {
-                console.log(error)
+                console.error('Execution error:', error);
                 setExecutionFailure(true)
                 setExecutionSuccess(false)
                 setExecutionLoading(false)

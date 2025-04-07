@@ -1,5 +1,5 @@
 import React, {useEffect, useState} from 'react';
-import axios from "axios";
+import axiosInstance from "../../api/axios";
 import {
     BarElement,
     CategoryScale,
@@ -59,7 +59,7 @@ const CpuUsageBarChart = () => {
     };
 
     const getCpuUsage = () => {
-        axios.get('/system_monitoring/get_cpu_usage')
+        axiosInstance.get('/system_monitoring/get_cpu_usage')
             .then(response => {
                 cpuCount++
                 setCpuData(response.data.barchart_1.data)
@@ -67,6 +67,7 @@ const CpuUsageBarChart = () => {
                 setLoading(false)
             })
             .catch(error => {
+                console.error('CPU usage error:', error);
                 setLoading(false)
                 setCpuError(true)
                 cpuCount++

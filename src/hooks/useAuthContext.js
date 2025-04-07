@@ -1,13 +1,20 @@
-import {AuthContext} from "../context/AuthContext";
 import {useContext} from "react";
+import {AuthContext} from "../context/AuthContext";
 
 const useAuthContext = () => {
-    const context = useContext(AuthContext)
+    const { state, dispatch } = useContext(AuthContext);
 
-    if (!context) {
-        throw Error('useAuthContext must be used inside an AuthContext!')
-    }
-    return context
-}
+    const login = (user, roles, authMethod, token) => {
+        localStorage.setItem('authMethod', authMethod);
+        dispatch({ type: 'LOGIN', payload: { user, roles, authMethod, token } });
+    };
 
-export default useAuthContext
+    const virtoLogin = (user, roles, authMethod, token) => {
+        localStorage.setItem('authMethod', authMethod);
+        dispatch({ type: 'VIRTO_LOGIN', payload: { user, roles, authMethod, token } });
+    };
+
+    return { ...state, login, virtoLogin, dispatch };
+};
+
+export default useAuthContext;

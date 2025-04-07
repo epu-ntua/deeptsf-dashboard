@@ -29,34 +29,39 @@ const SystemMonitoring = () => {
     const {keycloak, initialized} = useKeycloak()
     const navigate = useNavigate();
 
-    // Comment out the following line FOR TESTING
-    const [allowed, setAllowed] = useState(null)
-
-    // Uncomment the following line FOR TESTING
-    // const [allowed, setAllowed] = useState(true)
+    const [allowed, setAllowed] = useState(null);
 
     useEffect(() => {
         if (initialized) {
-            let roles = keycloak.realmAccess.roles
-            if (roles.includes('inergy_admin')) {
-                setAllowed(true)
-            } else navigate('/')
+            // Check auth method
+            const authMethod = localStorage.getItem('authMethod');
+            
+            if (authMethod === 'virto') {
+                // Virto users have inergy_admin role
+                setAllowed(true);
+            } else if (keycloak.authenticated) {
+                // Check for inergy_admin role in Keycloak
+                const roles = keycloak.realmAccess?.roles || [];
+                if (roles.includes('inergy_admin')) {
+                    setAllowed(true);
+                } else {
+                    navigate('/');
+                }
+            } else {
+                navigate('/');
+            }
         }
 
         if (!authenticationEnabled) {
-            setAllowed(true)
+            setAllowed(true);
         }
-    }, [initialized])
+    }, [initialized, keycloak.authenticated, keycloak.realmAccess?.roles, authenticationEnabled, navigate]);
 
     return (
         <>
             <Breadcrumb breadcrumbs={breadcrumbs} welcome_msg={''}/>
 
-            {/* Comment out the following line FOR TESTING */}
             {(initialized || !authenticationEnabled) && allowed && <>
-
-                {/* Uncomment the following line FOR TESTING */}
-                {/*{allowed && <>*/}
                 <Container maxWidth={'xl'} sx={{mt: 5, mb: 2}}>
                     <MemoryUsageBars/>
                 </Container>

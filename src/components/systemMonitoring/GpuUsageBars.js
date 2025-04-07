@@ -1,5 +1,5 @@
 import React, {useEffect, useState} from 'react';
-import axios from "axios";
+import axiosInstance from "../../api/axios";
 
 import Accordion from "@mui/material/Accordion";
 import AccordionSummary from "@mui/material/AccordionSummary";
@@ -38,7 +38,7 @@ const GpuUsageBars = () => {
     };
 
     const getGpuUsageData = () => {
-        axios.get('/system_monitoring/get_gpu_usage')
+        axiosInstance.get('/system_monitoring/get_gpu_usage')
             .then(response => {
                 gpuCount++
                 setGpu(response.data[0].progressbar_1.percent)
@@ -49,6 +49,7 @@ const GpuUsageBars = () => {
                 setLoading(false)
             })
             .catch(error => {
+                console.error('GPU usage error:', error);
                 gpuCount++
                 setGpuUsageError(true)
                 setLoading(false)
