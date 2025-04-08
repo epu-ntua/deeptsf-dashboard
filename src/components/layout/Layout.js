@@ -219,21 +219,36 @@ export default function Layout({children}) {
             });
 
             const dagsterEndpoint = process.env.REACT_APP_DAGSTER_ENDPOINT_URL;
-            if (dagsterEndpoint && dagsterEndpoint !== "") {
-                updatedMenuItems.push(
-                    {
-                        text: 'MLFlow',
-                        icon: <img src="/images/mlflow_logo.jpg" alt="" width={'25px'} style={{borderRadius: '50%'}}/>,
-                        path: location.pathname + ' ',
-                        link: process.env.REACT_APP_MLFLOW
-                    },
-                    {
-                        text: 'Dagster Dashboard',
-                        icon: <img src="/images/dagster_logo.jpg" alt="" width={'25px'} style={{borderRadius: '50%'}}/>,
-                        path: location.pathname + ' ',
-                        link: process.env.REACT_APP_DAGSTER_ENDPOINT_URL
-                    }
-                );
+            const mlflowEndpoint = process.env.REACT_APP_MLFLOW;
+            if (mlflowEndpoint !== "" && dagsterEndpoint !== "") {
+              updatedMenuItems.push(
+                {
+                  text: "MLFlow",
+                  icon: (
+                    <img
+                      src="/images/mlflow_logo.jpg"
+                      alt=""
+                      width={"25px"}
+                      style={{ borderRadius: "50%" }}
+                    />
+                  ),
+                  path: location.pathname + " ",
+                  link: process.env.REACT_APP_MLFLOW,
+                },
+                {
+                  text: "Dagster Dashboard",
+                  icon: (
+                    <img
+                      src="/images/dagster_logo.jpg"
+                      alt=""
+                      width={"25px"}
+                      style={{ borderRadius: "50%" }}
+                    />
+                  ),
+                  path: location.pathname + " ",
+                  link: process.env.REACT_APP_DAGSTER_ENDPOINT_URL,
+                }
+              );
             }
         }
 
