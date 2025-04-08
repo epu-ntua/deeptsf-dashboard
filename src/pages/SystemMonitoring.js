@@ -32,6 +32,13 @@ const SystemMonitoring = () => {
     const [allowed, setAllowed] = useState(null);
 
     useEffect(() => {
+        // If authentication is disabled, allow access regardless of auth status
+        if (!authenticationEnabled) {
+            setAllowed(true);
+            return;
+        }
+        
+        // Otherwise, check authentication status
         if (initialized) {
             // Check auth method
             const authMethod = localStorage.getItem('authMethod');
@@ -51,24 +58,21 @@ const SystemMonitoring = () => {
                 navigate('/');
             }
         }
-
-        if (!authenticationEnabled) {
-            setAllowed(true);
-        }
     }, [initialized, keycloak.authenticated, keycloak.realmAccess?.roles, authenticationEnabled, navigate]);
 
     return (
         <>
             <Breadcrumb breadcrumbs={breadcrumbs} welcome_msg={''}/>
 
-            {(initialized || !authenticationEnabled) && allowed && <>
-                <Container maxWidth={'xl'} sx={{mt: 5, mb: 2}}>
+            {/* Show content if auth is disabled or user has proper permissions */}
+            {(!authenticationEnabled || (initialized && allowed)) && <>
+                <Container maxWidth={'xl'} sx={{mt: 5, mb: 2}} data-testid={'systemMonitoringMemoryUsage'}>
                     <MemoryUsageBars/>
                 </Container>
-                <Container maxWidth={'xl'} sx={{my: 2}}>
+                <Container maxWidth={'xl'} sx={{my: 2}} data-testid={'systemMonitoringGpuUsage'}>
                     <GpuUsageBars/>
                 </Container>
-                <Container maxWidth={'xl'} sx={{my: 2}}>
+                <Container maxWidth={'xl'} sx={{my: 2}} data-testid={'systemMonitoringCpuUsage'}>
                     <CpuUsageBarChart/>
                 </Container>
             </>}

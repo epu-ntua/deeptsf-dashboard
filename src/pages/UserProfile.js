@@ -55,8 +55,24 @@ const UserProfile = () => {
     const [virtoUser, setVirtoUser] = useState(null);
     const [userInfoExpanded, setUserInfoExpanded] = useState(true);
     const [rolesExpanded, setRolesExpanded] = useState(false);
+    const [defaultUser, setDefaultUser] = useState(null);
+    
+    // Check if authentication is required based on env variable
+    const authenticationEnabled = process.env.REACT_APP_AUTH === "True";
 
     useEffect(() => {
+        // Create a default public user when authentication is disabled
+        if (!authenticationEnabled) {
+            setDefaultUser({
+                username: "Public User",
+                email: "public@example.com",
+                roles: ["public_role"],
+                firstName: "Public",
+                lastName: "User"
+            });
+        }
+        
+        // If authentication is enabled, check for Virto user
         const authMethod = localStorage.getItem('authMethod');
         if (authMethod === 'virto') {
             const username = localStorage.getItem('virtoUsername');
@@ -65,7 +81,7 @@ const UserProfile = () => {
             const token = localStorage.getItem('virtoToken');
             setVirtoUser({ username, email, roles, token });
         }
-    }, []);
+    }, [authenticationEnabled]);
 
     const breadcrumbs = [
         <Link fontSize={'20px'} underline="hover" key="1" color="inherit" href="/">
@@ -100,7 +116,8 @@ const UserProfile = () => {
                                                        style={{marginTop: '5%'}}/>
                                 <Typography variant={'h6'}
                                             sx={{color: 'text.secondary', fontWeight: 'bold'}}>
-                                    {initialized && keycloak.tokenParsed ? keycloak.tokenParsed.preferred_username : virtoUser?.username || ''}
+                                    {initialized && keycloak.tokenParsed ? keycloak.tokenParsed.preferred_username : 
+                                      virtoUser?.username || defaultUser?.username || ''}
                                 </Typography>
                             </Box>
 
@@ -139,7 +156,8 @@ const UserProfile = () => {
                                                 <TableCell sx={{fontSize: '18px', padding: '10px'}} align="center">
                                                     <Typography
                                                         fontSize={'large'}>
-                                                        {initialized && keycloak.tokenParsed ? keycloak.tokenParsed.preferred_username : virtoUser?.username || ''}
+                                                        {initialized && keycloak.tokenParsed ? keycloak.tokenParsed.preferred_username : 
+                                                          virtoUser?.username || defaultUser?.username || ''}
                                                     </Typography>
                                                 </TableCell>
                                                 <TableCell sx={{fontSize: '18px', padding: '10px'}} align="center">
@@ -178,7 +196,7 @@ const UserProfile = () => {
                                                             :
                                                             <Typography fontSize={'large'}>No roles assigned.</Typography>
                                                     ) : (
-                                                        virtoUser?.roles.length > 0 ?
+                                                        virtoUser?.roles?.length > 0 ? (
                                                             <Accordion expanded={rolesExpanded}
                                                                        onClick={() => setRolesExpanded(!rolesExpanded)}
                                                             >
@@ -209,20 +227,54 @@ const UserProfile = () => {
                                                                     ))}
                                                                 </AccordionDetails>
                                                             </Accordion>
-                                                            :
+                                                        ) : defaultUser?.roles?.length > 0 ? (
+                                                            <Accordion expanded={rolesExpanded}
+                                                                       onClick={() => setRolesExpanded(!rolesExpanded)}
+                                                            >
+                                                                <AccordionSummary
+                                                                    expandIcon={<ExpandMoreIcon/>}
+                                                                    aria-controls="panel2bh-content"
+                                                                    id="panel2bh-header">
+                                                                    <Container>
+                                                                        <Typography fontSize={'large'} align={'center'}
+                                                                                    fontWeight={'bold'}>
+                                                                            {defaultUser.roles.length} role{(defaultUser.roles.length > 1 || defaultUser.roles.length === 0) && 's'}.
+                                                                        </Typography>
+                                                                        {!rolesExpanded &&
+                                                                            <Typography fontSize={'large'}
+                                                                                        overflow={'hidden'}
+                                                                                        align={'center'}>{'Click to expand.'}
+                                                                            </Typography>}
+                                                                    </Container>
+                                                                </AccordionSummary>
+
+                                                                <AccordionDetails>
+                                                                    {defaultUser.roles.map(role => (
+                                                                        <Grid display={'flex'} padding={0} key={role}
+                                                                              sx={{overflow: 'hidden'}}>
+                                                                            <ArrowRightRoundedIcon/>
+                                                                            {role}<br/>
+                                                                        </Grid>
+                                                                    ))}
+                                                                </AccordionDetails>
+                                                            </Accordion>
+                                                        ) : (
                                                             <Typography fontSize={'large'}>No roles assigned.</Typography>
+                                                        )
                                                     )}
                                                 </TableCell>
                                                 <TableCell sx={{fontSize: '18px', padding: '10px'}} align="center">
                                                     <Typography
                                                         fontSize={'large'}>
-                                                        {initialized && keycloak.tokenParsed ? (keycloak.tokenParsed.given_name || '-') : '-'}
+                                                        {initialized && keycloak.tokenParsed ? (keycloak.tokenParsed.given_name || '-') : 
+                                                          defaultUser?.firstName || '-'}
                                                     </Typography>
                                                 </TableCell>
                                                 <TableCell sx={{fontSize: '18px', padding: '10px'}} align="center">
                                                     <Typography
                                                         fontSize={'large'}>
-                                                        {initialized && keycloak.tokenParsed ? (keycloak.tokenParsed.family_name || '-') : '-'}
+                                                        {initialized && keycloak.tokenParsed ? (keycloak.tokenParsed.family_name || '-') : 
+                                                          defaultUser?.lastName || '-'}
                                                     </Typography>
                                                 </TableCell>
                                             </StyledTableRow>

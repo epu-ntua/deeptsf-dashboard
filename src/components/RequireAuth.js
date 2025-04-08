@@ -9,6 +9,9 @@ const RequireAuth = () => {
     const location = useLocation();
     const { user } = useAuthContext();
     
+    // Check if authentication is required based on env variable
+    const authenticationEnabled = process.env.REACT_APP_AUTH === "True";
+    
     // Check both authentication methods
     const keycloakAuthenticated = keycloak.authenticated;
     const virtoAuthenticated = localStorage.getItem('authMethod') === 'virto' && localStorage.getItem('virtoToken');
@@ -23,6 +26,12 @@ const RequireAuth = () => {
         }
     }, [keycloakAuthenticated, virtoAuthenticated, keycloak.token]);
 
+    // If authentication is disabled, allow access without checking auth status
+    if (!authenticationEnabled) {
+        return <Outlet />;
+    }
+    
+    // Otherwise, check authentication
     if (keycloakAuthenticated || virtoAuthenticated) {
         return <Outlet />;
     } else {

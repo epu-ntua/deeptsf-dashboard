@@ -59,27 +59,42 @@ const ByEvaluationMetric = () => {
         // Experiments
         axios.get('/results/get_list_of_experiments')
             .then(response => {
-                setExperiments(response.data)
+                if (Array.isArray(response.data)) {
+                    setExperiments(response.data);
+                } else {
+                    console.error('Unexpected response for experiments:', response.data);
+                    setExperiments([]); // Fallback to an empty array
+                }
             })
             .catch(error => {
-                console.log(error)
-            })
+                console.error('Error fetching experiments:', error);
+                setExperiments([]); // Fallback to an empty array
+            });
 
         // Metrics
         axios.get('/metrics/get_metric_names')
             .then(response => {
-                setMetrics(response.data)
+                if (Array.isArray(response.data)) {
+                    setMetrics(response.data);
+                } else {
+                    console.error('Unexpected response for metrics:', response.data);
+                    setMetrics([]); // Fallback to an empty array
+                }
             })
             .catch(error => {
-                console.log(error)
-            })
+                console.error('Error fetching metrics:', error);
+                setMetrics([]); // Fallback to an empty array
+            });
 
         // Get default best run
         axios.get(`/results/get_best_run_id_by_mlflow_experiment/${experimentChosen}/mape`)
             .then(response => {
-                setBestRun(response.data)
+                setBestRun(response.data);
             })
-            .catch(error => console.log('error'))
+            .catch(error => {
+                console.error('Error fetching best run:', error);
+                setBestRun(''); // Fallback to an empty string
+            });
     }
 
     const fetchMetrics = (experiment, metric, run) => {
@@ -174,7 +189,7 @@ const ByEvaluationMetric = () => {
                             label="Choose an experiment"
                             onChange={e => setExperimentChosen(e.target.value)}
                         >
-                            {experiments && experiments.map(experiment => (
+                            {Array.isArray(experiments) && experiments.map(experiment => (
                                 <MenuItem key={experiment.experiment_id}
                                           value={experiment.experiment_id}>{experiment?.experiment_name ? experiment.experiment_name : 'Default'}</MenuItem>))}
                         </Select>
@@ -199,7 +214,7 @@ const ByEvaluationMetric = () => {
                             label="Choose a metric"
                             onChange={e => setMetricChosen(e.target.value)}
                         >
-                            {metrics && metrics.map(metric => (
+                            {Array.isArray(metrics) && metrics.map(metric => (
                                 <MenuItem key={metric.search_term}
                                           value={metric.search_term}>{metric.metric_name}</MenuItem>))}
                         </Select>

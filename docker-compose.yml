@@ -1,12 +1,10 @@
-version: "3.3"
-
 services:
   app:
     container_name: load-forecasting-dashboard
     #    image: iccs/load-forecasting-dashboard:0.1
     restart: always
     build:
-      context: ""
+      context: "./"
     volumes:
       - ./src:/app/src
     ports:
@@ -14,8 +12,10 @@ services:
     stdin_open: true
     networks:
       - keycloak_net
-#    env_file:
-#      - .env
+    # environment:
+    #   - REACT_APP_AUTH=False
+    env_file:
+      - ./.env
 
 networks:
  keycloak_net:

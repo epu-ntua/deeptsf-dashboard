@@ -124,6 +124,8 @@ export default function Layout({children}) {
     const [isAuthenticated, setIsAuthenticated] = useState(false);
     const [virtoLoginSuccess, setVirtoLoginSuccess] = useState(false);
 
+    const authenticationEnabled = process.env.REACT_APP_AUTH === "True";
+
     const handleSignOut = async () => {
         // The useLogout hook will handle both authentication methods
         await logout();
@@ -150,26 +152,25 @@ export default function Layout({children}) {
     const handleDrawerOpen = () => setDrawerOpen(true);
     const handleDrawerClose = () => setDrawerOpen(false);
 
-    const authenticationEnabled = process.env.REACT_APP_AUTH === "True";
-
     useEffect(() => {
         // Check authentication status and update state
         const authMethod = localStorage.getItem('authMethod');
         const keycloakAuth = keycloak?.authenticated;
         const virtoAuth = authMethod === 'virto' && localStorage.getItem('virtoToken');
         
-        if (keycloakAuth || virtoAuth) {
+        if ((keycloakAuth || virtoAuth) && authenticationEnabled) {
             setIsAuthenticated(true);
             setShowVirtoLoginForm(false);
         } else {
-            setIsAuthenticated(false);
+            // Set as authenticated even without tokens if auth is disabled
+            setIsAuthenticated(authenticationEnabled ? false : true);
         }
         
-        // Build menu based on roles
+        // Build menu based on roles or make all available if auth is disabled
         let roles = [];
         
         // Handle Virto authentication
-        if (authMethod === 'virto') {
+        if (authMethod === 'virto' && authenticationEnabled) {
             // Always use inergy_admin role for Virto users
             roles = ['inergy_admin'];
             
@@ -180,7 +181,7 @@ export default function Layout({children}) {
             }
         } 
         // Handle Keycloak authentication
-        else if (keycloakAuth) {
+        else if (keycloakAuth && authenticationEnabled) {
             // Get roles directly from Keycloak
             roles = keycloak.realmAccess?.roles || [];
             
@@ -193,7 +194,7 @@ export default function Layout({children}) {
 
         const updatedMenuItems = [...menuItems];
 
-        // Add menu items based on roles
+        // Add menu items based on roles or all if auth is disabled
         if ((roles.includes('data_scientist') || roles.includes('inergy_admin')) || !authenticationEnabled) {
             updatedMenuItems.push({
                 text: 'Codeless Forecasting Pipeline',
@@ -219,12 +220,20 @@ export default function Layout({children}) {
 
             const dagsterEndpoint = process.env.REACT_APP_DAGSTER_ENDPOINT_URL;
             if (dagsterEndpoint && dagsterEndpoint !== "") {
-                updatedMenuItems.push({
-                    text: 'Dagster Dashboard',
-                    icon: <img src="/images/dagster_logo.jpg" alt="" width={'25px'} style={{borderRadius: '50%'}}/>,
-                    path: location.pathname + ' ',
-                    link: process.env.REACT_APP_DAGSTER_ENDPOINT_URL
-                });
+                updatedMenuItems.push(
+                    {
+                        text: 'MLFlow',
+                        icon: <img src="/images/mlflow_logo.jpg" alt="" width={'25px'} style={{borderRadius: '50%'}}/>,
+                        path: location.pathname + ' ',
+                        link: process.env.REACT_APP_MLFLOW
+                    },
+                    {
+                        text: 'Dagster Dashboard',
+                        icon: <img src="/images/dagster_logo.jpg" alt="" width={'25px'} style={{borderRadius: '50%'}}/>,
+                        path: location.pathname + ' ',
+                        link: process.env.REACT_APP_DAGSTER_ENDPOINT_URL
+                    }
+                );
             }
         }
 
@@ -233,6 +242,9 @@ export default function Layout({children}) {
 
     // Process JWT from URL parameters
     useEffect(() => {
+        // Skip JWT processing if authentication is disabled
+        if (!authenticationEnabled) return;
+
         const urlParams = new URLSearchParams(window.location.search);
         const jwtToken = urlParams.get('jwt');
         if (!jwtToken) {
@@ -280,7 +292,7 @@ export default function Layout({children}) {
                 console.error('Error response data:', error.response.data);
             }
         });
-    }, []);
+    }, [authenticationEnabled]);
 
     return (
         <React.Fragment>
@@ -296,7 +308,7 @@ export default function Layout({children}) {
                             <MenuIcon/>
                         </IconButton>
                         <h3 style={{color: 'white'}}>DeepTSF</h3>
-                        {keycloak.authenticated === true || localStorage.getItem('authMethod') === 'virto' ? (
+                        {(keycloak.authenticated === true || localStorage.getItem('authMethod') === 'virto') && authenticationEnabled ? (
                             <React.Fragment>
                                 <Typography style={{
                                     marginLeft: 'auto',
@@ -363,25 +375,27 @@ export default function Layout({children}) {
                     </List>
                     <Divider/>
 
-                    <List>
-                        {keycloak.authenticated === false && localStorage.getItem('authMethod') !== 'virto' && <SignedOutLinks navigate={navigate} location={location}/>}
-                        {keycloak.authenticated === true || localStorage.getItem('authMethod') === 'virto' ? (
-                            <SignedInLinks navigate={navigate} location={location} handleSignOut={handleSignOut}/>
-                        ) : null}
-                        {/* Only show DeployAI Login if user is not authenticated through any method */}
-                        {!keycloak.authenticated && localStorage.getItem('authMethod') !== 'virto' && (
-                            <ListItemButton onClick={handleVirtoLoginClick}>
-                                <ListItemIcon>
-                                    <LockOutlinedIcon color="primary" />
-                                </ListItemIcon>
-                                <ListItemText primary="DeployAI Login" />
-                            </ListItemButton>
-                        )}
-                        {showVirtoLoginForm && !keycloak.authenticated && localStorage.getItem('authMethod') !== 'virto' && <VirtoLoginForm />}
-                        {virtoResponse && <Typography>{virtoResponse}</Typography>}
-                        {virtoError && <Typography color="error">{virtoError}</Typography>}
-                    </List>
-
+                    {/* Only show authentication-related UI when authentication is enabled */}
+                    {authenticationEnabled && (
+                        <List>
+                            {keycloak.authenticated === false && localStorage.getItem('authMethod') !== 'virto' && <SignedOutLinks navigate={navigate} location={location}/>}
+                            {keycloak.authenticated === true || localStorage.getItem('authMethod') === 'virto' ? (
+                                <SignedInLinks navigate={navigate} location={location} handleSignOut={handleSignOut}/>
+                            ) : null}
+                            {/* Only show DeployAI Login if user is not authenticated through any method */}
+                            {!keycloak.authenticated && localStorage.getItem('authMethod') !== 'virto' && (
+                                <ListItemButton onClick={handleVirtoLoginClick}>
+                                    <ListItemIcon>
+                                        <LockOutlinedIcon color="primary" />
+                                    </ListItemIcon>
+                                    <ListItemText primary="DeployAI Login" />
+                                </ListItemButton>
+                            )}
+                            {showVirtoLoginForm && !keycloak.authenticated && localStorage.getItem('authMethod') !== 'virto' && <VirtoLoginForm />}
+                            {virtoResponse && <Typography>{virtoResponse}</Typography>}
+                            {virtoError && <Typography color="error">{virtoError}</Typography>}
+                        </List>
+                    )}
                 </Drawer>
                 <Main open={drawerOpen} style={{overflow: 'hidden', paddingBottom: 0}}>
                     <DrawerHeader/>

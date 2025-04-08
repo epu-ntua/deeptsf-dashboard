@@ -42,6 +42,13 @@ const CodelessForecast = () => {
     const [allowed, setAllowed] = useState(null);
 
     useEffect(() => {
+        // If authentication is disabled, allow access without checking roles
+        if (!authenticationEnabled) {
+            setAllowed(true);
+            return;
+        }
+
+        // Otherwise, check authentication status
         if (initialized) {
             // Check auth method
             const authMethod = localStorage.getItem('authMethod');
@@ -60,10 +67,6 @@ const CodelessForecast = () => {
             } else {
                 navigate('/');
             }
-        }
-
-        if (!authenticationEnabled) {
-            setAllowed(true);
         }
     }, [initialized, keycloak.authenticated, keycloak.realmAccess?.roles, navigate, authenticationEnabled]);
 
@@ -109,21 +112,6 @@ const CodelessForecast = () => {
     const [forecastHorizon, setForecastHorizon] = useState(24)
     const [ignorePrevious, setIgnorePrevious] = useState(true)
     const [seriesUri, setSeriesUri] = useState('')
-
-    useEffect(() => {
-        if (initialized) {
-            if (keycloak.realmAccess) {
-                let roles = keycloak.realmAccess.roles
-                if ((roles.includes('data_scientist') || roles.includes('inergy_admin'))) {
-                    setAllowed(true)
-                } else navigate('/')
-            }
-        }
-
-        if (!authenticationEnabled) {
-            setAllowed(true)
-        }
-    }, [initialized])
 
     useEffect(() => {
         if ((initialized && experimentResolution) || (!authenticationEnabled && experimentResolution)) {
@@ -237,7 +225,8 @@ const CodelessForecast = () => {
         <>
             <Breadcrumb breadcrumbs={breadcrumbs} welcome_msg={''}/>
 
-            {allowed && <>
+            {/* Show content if auth is disabled or user has proper permissions */}
+            {(allowed || !authenticationEnabled) && <>
                 {/* Dataset Configuration */}
                 <DatasetConfiguration
                     resetState={resetState}
