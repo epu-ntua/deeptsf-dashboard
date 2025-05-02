@@ -12,8 +12,8 @@ services:
     stdin_open: true
     networks:
       - keycloak_net
-    # environment:
-    #   - REACT_APP_AUTH=False
+    environment:
+      - REACT_APP_AUTH=False
     env_file:
       - ./.env
 
