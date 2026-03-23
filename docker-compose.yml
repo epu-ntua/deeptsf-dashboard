@@ -1,0 +1,25 @@
+services:
+  app:
+    container_name: load-forecasting-dashboard
+    #    image: iccs/load-forecasting-dashboard:0.1
+    restart: always
+    build:
+      context: "./"
+    volumes:
+      - ./src:/app/src
+    ports:
+      - '3003:3000'
+    stdin_open: true
+    networks:
+      - load-forecasting-net
+    environment:
+      - REACT_APP_AUTH=False
+      - REACT_APP_BACKEND_BASE_URL=http://localhost:8080
+      - REACT_APP_MLFLOW=http://localhost:5000
+      - REACT_APP_DAGSTER_ENDPOINT_URL=http://localhost:8006
+    env_file:
+      - ./.env
+
+networks:
+ load-forecasting-net:
+   external: true
