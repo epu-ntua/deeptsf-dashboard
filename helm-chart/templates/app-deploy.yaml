@@ -1,0 +1,44 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: "{{ .Release.Name }}-{{ .Values.app.service.name }}"
+  labels:
+    release: {{ .Release.Name }}
+spec:
+  replicas: {{ .Values.app.replicas }}
+  selector:
+    matchLabels:
+      app: {{ .Values.app.service.name }}
+      release: {{ .Release.Name }} 
+  template:
+    metadata:
+      annotations:
+        rollme: "{{ .Values.commitHash | default (randAlphaNum 5) }}"
+      labels:
+        app: {{ .Values.app.service.name }}
+        release: {{ .Release.Name }}
+    spec:
+      containers:
+      - name: deeptsf-dashboard-container
+        image: "{{ .Values.app.image.repository }}:{{ .Values.app.image.tag }}"
+        lifecycle:
+          postStart:
+            exec:
+              command: ["sh", "-c", "npm install && npm run build"]
+        imagePullPolicy: Always
+        resources:
+          limits:
+            memory: {{ .Values.app.memory_limit | quote }}
+        envFrom:
+        - configMapRef:
+            name: {{ .Release.Name }}-{{ .Values.app.service.name }}-cm
+        - secretRef:
+            name: {{ .Release.Name }}-{{ .Values.app.service.name }}-secrets
+        ports:
+        - containerPort: 3000
+        readinessProbe:
+          httpGet:
+            path: /
+            port: 3000
+          initialDelaySeconds: 5
+          periodSeconds: 10

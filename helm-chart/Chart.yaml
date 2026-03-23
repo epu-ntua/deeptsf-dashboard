@@ -1,0 +1,5 @@
+name: deeptsf-dashboard
+version: 1.0.0
+apiVersion: v2
+description: React dashboard for the deep learning threat detection system
+appVersion: 1.0.0

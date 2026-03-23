@@ -1,25 +1,24 @@
-# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
-/.env
-/.env.auth
+# Ignore the node_modules directory in the React app folder
+deeptsf-dashboard/node_modules/
 
-# dependencies
-/node_modules
-/.pnp
-.pnp.js
+# Ignore build artifacts and logs
+deeptsf-dashboard/build/
+deeptsf-dashboard/.env
+deeptsf-dashboard/.env.local
+deeptsf-dashboard/.env.*.local
+*.log
 
-# testing
-/coverage
+# Ignore Helm chart build artifacts
+helm-chart/charts/
+helm-chart/*.tgz
 
-# production
-/build
+# Ignore Docker related files
+*.dockerignore
+#Dockerfile
 
-# misc
+# Ignore other OS-specific files
 .DS_Store
-.env.local
-.env.development.local
-.env.test.local
-.env.production.local
+Thumbs.db
 
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
+# Ignore GitLab CI/CD local build files
+.gitlab-ci-local.yml
