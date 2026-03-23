@@ -1,25 +1,27 @@
 services:
   app:
     container_name: load-forecasting-dashboard
-    #    image: iccs/load-forecasting-dashboard:0.1
     restart: always
     build:
-      context: "./"
+      context: .
+      args:
+        REACT_APP_BACKEND_BASE_URL: ${REACT_APP_BACKEND_BASE_URL}
+        REACT_APP_MLFLOW: ${REACT_APP_MLFLOW}
+        REACT_APP_KEYCLOAK_REALM: ${REACT_APP_KEYCLOAK_REALM}
+        REACT_APP_KEYCLOAK_URL: ${REACT_APP_KEYCLOAK_URL}
+        REACT_APP_KEYCLOAK_CLIENT_ID: ${REACT_APP_KEYCLOAK_CLIENT_ID}
+        REACT_APP_DAGSTER_ENDPOINT_URL: ${REACT_APP_DAGSTER_ENDPOINT_URL}
+        REACT_APP_BACKEND_WS_URL: ${REACT_APP_BACKEND_WS_URL}
     volumes:
       - ./src:/app/src
     ports:
-      - '3003:3000'
+      - '3000:3000'
     stdin_open: true
-    networks:
-      - load-forecasting-net
-    environment:
-      - REACT_APP_AUTH=False
-      - REACT_APP_BACKEND_BASE_URL=http://localhost:8080
-      - REACT_APP_MLFLOW=http://localhost:5000
-      - REACT_APP_DAGSTER_ENDPOINT_URL=http://localhost:8006
+    # networks:
+    #   - keycloak_net
     env_file:
-      - ./.env
+      - .env
 
-networks:
- load-forecasting-net:
-   external: true
+# networks:
+#   keycloak_net:
+#     external: true
