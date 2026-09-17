@@ -23,7 +23,7 @@ import HistoryOutlinedIcon from '@mui/icons-material/HistoryOutlined';
 import UpdateOutlinedIcon from '@mui/icons-material/UpdateOutlined';
 import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
 
-const DOCS_URL = 'https://github.com/epu-ntua/DeepTSF/wiki/Input-format';
+const DOCS_URL = 'https://github.com/epu-ntua/DeepTSF/wiki/Input-format#foundation-models-time-series-format';
 
 const uploadButtonSx = {
     fontWeight: 'bold',
