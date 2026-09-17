@@ -19,7 +19,12 @@ import LabelOutlinedIcon from "@mui/icons-material/LabelOutlined";
 import ModelTrainingIcon from "@mui/icons-material/ModelTraining";
 import SettingsApplicationsIcon from "@mui/icons-material/SettingsApplications";
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
-import {useEffect} from "react";
+import {useEffect, useState} from "react";
+import axiosInstance from "../../api/axios";
+
+// "True": pick the experiment from the MLflow experiments the user can access.
+// Anything else: type the experiment name in a text box.
+const experimentListEnabled = process.env.REACT_APP_EXPERIMENT_LIST === "True";
 
 const ModelTrainingSetup = ({
                                 experimentName,
@@ -64,6 +69,24 @@ const ModelTrainingSetup = ({
     const handleIgnoreFirstCheckBox = () => {
         setIgnorePrevious(!ignorePrevious)
     }
+
+    const [experiments, setExperiments] = useState([])
+    const [experimentsLoading, setExperimentsLoading] = useState(experimentListEnabled)
+    const [experimentsError, setExperimentsError] = useState(false)
+
+    useEffect(() => {
+        if (!experimentListEnabled) return
+        axiosInstance.get('/results/get_list_of_experiments')
+            .then(response => {
+                // Skip MLflow's built-in "Default" experiment, runs should go to a user created one
+                setExperiments((response.data || []).filter(experiment => experiment.experiment_id !== '0'))
+            })
+            .catch(error => {
+                console.error('Experiment list error:', error)
+                setExperimentsError(true)
+            })
+            .finally(() => setExperimentsLoading(false))
+    }, [])
 
     return (
       <>
@@ -111,17 +134,58 @@ const ModelTrainingSetup = ({
                 alignItems={"center"}
               >
                 <Grid item xs={12} md={12}>
-                  <TextField
-                    id="outlined-basic"
-                    label="Experiment name"
-                    variant="outlined"
-                    required
-                    fullWidth
-                    value={experimentName}
-                    error={experimentNameError && experimentName === ""}
-                    onChange={(e) => setExperimentName(e.target.value)}
-                    disabled={executionLoading}
-                  />
+                  {!experimentListEnabled && (
+                    <TextField
+                      id="outlined-basic"
+                      label="Experiment name"
+                      variant="outlined"
+                      required
+                      fullWidth
+                      value={experimentName}
+                      error={experimentNameError && experimentName === ""}
+                      onChange={(e) => setExperimentName(e.target.value)}
+                      disabled={executionLoading}
+                    />
+                  )}
+                  {experimentListEnabled && experimentsLoading && (
+                    <Alert severity="info">Loading your experiments...</Alert>
+                  )}
+                  {experimentListEnabled && !experimentsLoading && experimentsError && (
+                    <Alert severity="error">
+                      We couldn't load your experiments. Please refresh the page or try again later.
+                    </Alert>
+                  )}
+                  {experimentListEnabled && !experimentsLoading && !experimentsError && experiments.length === 0 && (
+                    <Alert severity="info">
+                      You don't have any experiments yet. Please create an experiment in the EnergyGuard dashboard
+                      first, then come back here to run your pipeline in it.
+                    </Alert>
+                  )}
+                  {experimentListEnabled && !experimentsLoading && !experimentsError && experiments.length > 0 && (
+                    <FormControl
+                      fullWidth
+                      required
+                      error={experimentNameError && experimentName === ""}
+                    >
+                      <InputLabel id="experiment-select-label">
+                        Choose an experiment
+                      </InputLabel>
+                      <Select
+                        labelId="experiment-select-label"
+                        id="experiment-select"
+                        value={experimentName}
+                        label="Choose an experiment"
+                        onChange={(e) => setExperimentName(e.target.value)}
+                        disabled={executionLoading}
+                      >
+                        {experiments.map((experiment) => (
+                          <MenuItem key={experiment.experiment_id} value={experiment.experiment_name}>
+                            {experiment.experiment_name}
+                          </MenuItem>
+                        ))}
+                      </Select>
+                    </FormControl>
+                  )}
                 </Grid>
                 {/*<Grid item xs={6} md={4} display={'flex'} alignItems={'center'}>*/}
                 {/*    /!*<Typography sx={{ml: 'auto'}} variant={'body1'} fontWeight={'bold'}>Ignore Previous*!/*/}

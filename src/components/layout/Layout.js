@@ -211,7 +211,8 @@ export default function Layout({children}) {
             });
         }
 
-        if ((roles.includes('data_scientist') || roles.includes('energy_engineer') || roles.includes('inergy_admin')) || !authenticationEnabled) {
+        const foundationModelsEnabled = process.env.REACT_APP_FOUNDATION_MODELS !== "False";
+        if (foundationModelsEnabled && ((roles.includes('data_scientist') || roles.includes('energy_engineer') || roles.includes('inergy_admin')) || !authenticationEnabled)) {
             updatedMenuItems.push({
                 text: 'Foundation Models',
                 icon: <AutoAwesomeIcon color="primary"/>,

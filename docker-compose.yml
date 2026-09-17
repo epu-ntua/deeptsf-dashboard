@@ -19,6 +19,8 @@ services:
         # Normally left unset: nginx injects CHRONOS_API_TOKEN instead, which
         # keeps the token out of the browser bundle.
         REACT_APP_CHRONOS_API_TOKEN: ${REACT_APP_CHRONOS_API_TOKEN:-}
+        REACT_APP_FOUNDATION_MODELS: ${REACT_APP_FOUNDATION_MODELS:-True}
+        REACT_APP_EXPERIMENT_LIST: ${REACT_APP_EXPERIMENT_LIST:-False}
     # The image serves the production build with nginx on port 3001 and proxies
     # /chronos to the Chronos-2 inference server (see nginx/default.conf.template).
     # For a live-reloading dev server run `npm start` instead, which applies

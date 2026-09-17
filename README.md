@@ -20,6 +20,8 @@ Before proceeding, follow the instructions below.
    or `.env.example` accordingly. Replace the content of the `.env` file with one of the two configurations, add your
    links as indicated, and proceed to the next step.
    The `REACT_APP_*` values are baked into the bundle at build time, so rebuild the image after changing them.
+   `REACT_APP_FOUNDATION_MODELS` shows or hides the Foundation Models page, and `REACT_APP_EXPERIMENT_LIST=True` makes
+   Codeless Forecast offer a list of the user's MLflow experiments instead of a free-text experiment name.
 
 2. **Foundation Models (Chronos-2):** set `CHRONOS_API_TOKEN` in `.env`. Without it every forecast returns 401.
 

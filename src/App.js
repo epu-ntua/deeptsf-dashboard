@@ -93,9 +93,10 @@ function App() {
                             <Route path="/experiment-tracking" element={<ExperimentTracking/>}/>
                         </Route>
 
-                        <Route element={<RequireAuth/>}>
-                            <Route path="/foundation-models" element={<FoundationModels/>}/>
-                        </Route>
+                        {process.env.REACT_APP_FOUNDATION_MODELS !== "False" &&
+                            <Route element={<RequireAuth/>}>
+                                <Route path="/foundation-models" element={<FoundationModels/>}/>
+                            </Route>}
                     </Routes>
                 </Layout>
             </div>

@@ -4,6 +4,8 @@ import RuleIcon from '@mui/icons-material/Rule';
 import TerminalIcon from '@mui/icons-material/Terminal';
 import AutoAwesomeIcon from '@mui/icons-material/AutoAwesome';
 
+const foundationModelsEnabled = process.env.REACT_APP_FOUNDATION_MODELS !== "False";
+
 export const servicesHomepage = [
     {
         'id': 'model_training',
@@ -50,4 +52,4 @@ export const servicesHomepage = [
         'link': '/monitoring',
         'roles': ['inergy_admin']
     },
-]
+].filter(service => service.id !== 'foundation_models' || foundationModelsEnabled)
