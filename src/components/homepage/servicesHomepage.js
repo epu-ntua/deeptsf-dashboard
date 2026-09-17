@@ -21,7 +21,7 @@ export const servicesHomepage = [
         'title': 'Model Evaluation',
         'description': 'Evaluate your Machine Learning models and visualise Actual vs Forecasted values.',
         'icon': <RuleIcon style={{color: 'white', fontSize: '80px'}}/>,
-        'image': 'https://freerangestock.com/sample/117860/artificial-intelligence--machine-learning--digital-brain-mesh-.jpg',
+        'image': '/images/model-evaluation.jpg',
         'link': '/experiment-tracking',
         'roles': ['inergy_admin', 'energy_engineer']
     },
