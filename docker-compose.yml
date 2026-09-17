@@ -1,22 +1,36 @@
 services:
   app:
     container_name: load-forecasting-dashboard
-    #    image: iccs/load-forecasting-dashboard:0.1
     restart: always
     build:
-      context: "./"
-    volumes:
-      - ./src:/app/src
+      context: .
+      target: production
+      args:
+        REACT_APP_NAME: ${REACT_APP_NAME}
+        REACT_APP_AUTH: ${REACT_APP_AUTH}
+        REACT_APP_BACKEND_BASE_URL: ${REACT_APP_BACKEND_BASE_URL}
+        REACT_APP_MLFLOW: ${REACT_APP_MLFLOW}
+        REACT_APP_KEYCLOAK_REALM: ${REACT_APP_KEYCLOAK_REALM}
+        REACT_APP_KEYCLOAK_URL: ${REACT_APP_KEYCLOAK_URL}
+        REACT_APP_KEYCLOAK_CLIENT_ID: ${REACT_APP_KEYCLOAK_CLIENT_ID}
+        REACT_APP_DAGSTER_ENDPOINT_URL: ${REACT_APP_DAGSTER_ENDPOINT_URL}
+        REACT_APP_BACKEND_WS_URL: ${REACT_APP_BACKEND_WS_URL:-}
+        REACT_APP_CHRONOS_BASE_URL: ${REACT_APP_CHRONOS_BASE_URL:-/chronos}
+        # Normally left unset: nginx injects CHRONOS_API_TOKEN instead, which
+        # keeps the token out of the browser bundle.
+        REACT_APP_CHRONOS_API_TOKEN: ${REACT_APP_CHRONOS_API_TOKEN:-}
+    # The image serves the production build with nginx on port 3001 and proxies
+    # /chronos to the Chronos-2 inference server (see nginx/default.conf.template).
+    # For a live-reloading dev server run `npm start` instead, which applies
+    # src/setupProxy.js.
+    environment:
+      CHRONOS_API_TOKEN: ${CHRONOS_API_TOKEN:-}
+      CHRONOS_HOST: ${CHRONOS_HOST:-chronos2-inference-server.aiodp.ai}
     ports:
       - '3003:3001'
-    stdin_open: true
     networks:
       - nginxproxy_energyguard_net
-    # environment:
-    #   - REACT_APP_AUTH=False
-    env_file:
-      - ./.env
 
 networks:
- nginxproxy_energyguard_net:
-   external: true
+  nginxproxy_energyguard_net:
+    external: true

@@ -1,0 +1,26 @@
+# The Dockerfile runs `npm install` and only then `COPY . .`. Without this file
+# a local node_modules/ (built for the host OS) would be copied over the one the
+# image just installed, producing a broken and very large image.
+node_modules
+build
+coverage
+
+.git
+.gitignore
+.idea
+.vscode
+
+# Local secrets and overrides: the image gets its values from build args and the
+# container environment instead.
+.env
+.env.local
+.env.*.local
+
+Dockerfile
+.dockerignore
+docker-compose.yml
+
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+*.pem

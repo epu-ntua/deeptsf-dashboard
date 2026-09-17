@@ -23,7 +23,7 @@ it('renders the homepage', () => {
     expect(homepageOverall).toBeInTheDocument();
 })
 
-it('renders 4 full-width items in the homepage', () => {
+it('renders 5 full-width items in the homepage', () => {
     render(
         <ReactKeycloakProvider authClient={my_keycloak} initOptions={{ onLoad: 'login-required' }}>
             <React.StrictMode>
@@ -36,5 +36,5 @@ it('renders 4 full-width items in the homepage', () => {
         </ReactKeycloakProvider>
     )
     const homepageItem = screen.getAllByTestId('homepageItem')
-    expect(homepageItem.length).toBe(4);
+    expect(homepageItem.length).toBe(5);
 })
