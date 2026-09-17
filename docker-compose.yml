@@ -31,8 +31,10 @@ services:
     ports:
       - '3003:3001'
     networks:
-      - nginxproxy_energyguard_net
+      - appnet
 
 networks:
-  nginxproxy_energyguard_net:
+  appnet:
+    # Name of the existing docker network the dashboard joins, set in .env
+    name: ${COMPOSE_NETWORK:-keycloak_net}
     external: true

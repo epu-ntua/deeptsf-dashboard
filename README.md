@@ -27,11 +27,6 @@ Before proceeding, follow the instructions below.
 
 3. **Docker Compose:** `docker compose up -d --build`
 
-   The image builds the app and serves it with nginx on port `3001` (host port `3003`), on the external
-   `nginxproxy_energyguard_net` network. nginx also proxies `/chronos` to the Chronos-2 inference server and adds the
-   API token, so the token never reaches the browser (see `nginx/default.conf.template`). Inference can take several
-   minutes, so the reverse proxy in front of the dashboard needs a read timeout of about 900s.
-
 ### Additional Notes
 
 - If you encounter any issues or have specific requirements, please refer to the project documentation.
