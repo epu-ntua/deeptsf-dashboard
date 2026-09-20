@@ -24,135 +24,150 @@ import Loading from "../layout/Loading";
 
 import {Bar, Line} from "react-chartjs-2";
 
+import {buildForecastChart, forecastChartOptions} from "./forecastChart";
+
+const DEFAULT_SAMPLES = 200
+
 const ByEvaluationMetric = () => {
-    console.log(process.env.REACT_APP_MLFLOW)
 
     const [experiments, setExperiments] = useState([])
-    const [experimentChosen, setExperimentChosen] = useState(0)
+    const [experimentChosen, setExperimentChosen] = useState('')
     const [bestRun, setBestRun] = useState('')
+
+    const [metrics, setMetrics] = useState([])
+    const [metricChosen, setMetricChosen] = useState('')
+
+    const [limit, setLimit] = useState('')
+
+    // Nothing is fetched for a run until the user has made a choice and asked for
+    // it, so the page opens on the prompt below instead of on an empty chart.
+    const [requested, setRequested] = useState(false)
 
     const [barChartLabels, setBarChartLabels] = useState([])
     const [barChartValues, setBarChartValues] = useState([])
     const [loadingBarChart, setLoadingBarChart] = useState(false)
     const [noBarChart, setNoBarChart] = useState(false)
 
-    const [lineChartLabels, setLineChartLabels] = useState([])
-    const [lineChartFirstValues, setLineChartFirstValues] = useState([])
-    const [lineChartSecondValues, setLineChartSecondValues] = useState([])
+    // A run that evaluated a whole multiple dataset has one set of results per
+    // Timeseries ID; the dropdown picks which of them the chart shows.
+    const [seriesOptions, setSeriesOptions] = useState([])
+    const [seriesChosen, setSeriesChosen] = useState('')
+
+    const [forecastChart, setForecastChart] = useState(null)
     const [loadingLineChart, setLoadingLineChart] = useState(false)
     const [noLineChart, setNoLineChart] = useState(false)
 
-    const [metrics, setMetrics] = useState('')
-    const [metricChosen, setMetricChosen] = useState('')
-
-    const [limit, setLimit] = useState(0)
-
-    const initializeCharts = () => {
-        setBarChartLabels([])
-        setBarChartValues([])
-        setLineChartLabels([])
-        setLineChartFirstValues([])
-        setLineChartSecondValues([])
-    }
-
-    const fetchData = () => {
-        // Experiments
-        axios.get('/results/get_list_of_experiments')
-            .then(response => {
-                setExperiments(response.data)
-            })
-            .catch(error => {
-                console.log(error)
-            })
-
-        // Metrics
-        axios.get('/metrics/get_metric_names')
-            .then(response => {
-                setMetrics(response.data)
-            })
-            .catch(error => {
-                console.log(error)
-            })
-
-        // Get default best run
-        axios.get(`/results/get_best_run_id_by_mlflow_experiment/${experimentChosen}/mape`)
-            .then(response => {
-                setBestRun(response.data)
-            })
-            .catch(error => console.log('error'))
-    }
-
-    const fetchMetrics = (experiment, metric, run) => {
-        setNoBarChart(false)
-        setNoLineChart(false)
-
-        setLoadingBarChart(true)
-        setLoadingLineChart(true)
-        axios.get(`/results/get_best_run_id_by_mlflow_experiment/${experiment}/${metric ? metric : 'mape'}`)
-            .then(response => {
-                setBestRun(response.data);
-                // Get data for Bar Chart
-                axios.get(`/results/get_metric_list/${run ? run : response.data}`)
-                    .then(response => {
-                        const data = response.data;
-                        if (Array.isArray(data.labels) && Array.isArray(data.data)) {
-                            setBarChartLabels(data.labels);
-                            setBarChartValues(data.data);
-                        } else {
-                            setNoBarChart(true);
-                        }
-                        setLoadingBarChart(false);
-                    })
-                    .catch(error => {
-                        setLoadingBarChart(false);
-                        setNoBarChart(true);
-                    });
-
-                // Get data for Line Chart
-                axios.get(`/results/get_forecast_vs_actual/${run ? run : response.data}/n_samples/${limit ? limit : 200}`)
-                    .then(response => {
-                        const data = response.data;
-                        if (Array.isArray(data.actual.index) && Array.isArray(data.actual.data) && Array.isArray(data.forecast.data)) {
-                            setLineChartLabels(data.actual.index);
-                            setLineChartFirstValues(data.actual.data);
-                            setLineChartSecondValues(data.forecast.data);
-                        } else {
-                            setNoLineChart(true);
-                        }
-                        setLoadingLineChart(false);
-                    })
-                    .catch(error => {
-                        setLoadingLineChart(false);
-                        setNoLineChart(true);
-                    });
-            })
-            .catch(error => {
-                setLoadingBarChart(false);
-                setLoadingLineChart(false);
-                setNoBarChart(true);
-                setNoLineChart(true);
-            });
-    }
-
     useEffect(() => {
-        fetchData()
-        axios.get(`/results/get_best_run_id_by_mlflow_experiment/0/mape`)
-            .then(response => {
-                setBestRun(response.data)
-                fetchMetrics(0, 'mape', response.data)
-            })
+        axios.get('/results/get_list_of_experiments')
+            .then(response => setExperiments(response.data))
+            .catch(error => console.log(error))
+
+        axios.get('/metrics/get_metric_names')
+            .then(response => setMetrics(response.data))
+            .catch(error => console.log(error))
     }, [])
 
+    // The results on screen belong to the experiment and metric they were loaded
+    // for, so changing either of those clears them rather than leaving something
+    // stale under the new selection.
     useEffect(() => {
-        initializeCharts()
-        setNoLineChart(false)
-        setNoBarChart(false)
+        setRequested(false)
         setBestRun('')
-        axios.get(`/results/get_best_run_id_by_mlflow_experiment/${experimentChosen}/${metricChosen ? metricChosen : null}`)
+        setBarChartLabels([])
+        setBarChartValues([])
+        setNoBarChart(false)
+        setSeriesOptions([])
+        setSeriesChosen('')
+        setForecastChart(null)
+        setNoLineChart(false)
+    }, [experimentChosen, metricChosen])
+
+    const fetchForecast = (run, series) => {
+        setNoLineChart(false)
+        setLoadingLineChart(true)
+
+        axios.get(`/results/get_forecast_vs_actual/${run}/n_samples/${limit > 0 ? limit : DEFAULT_SAMPLES}`,
+            {params: series ? {series} : undefined})
+            .then(response => {
+                const chart = buildForecastChart(response.data)
+                setForecastChart(chart)
+                setNoLineChart(!chart)
+                setLoadingLineChart(false)
+            })
+            .catch(error => {
+                setForecastChart(null)
+                setLoadingLineChart(false)
+                setNoLineChart(true)
+            })
+    }
+
+    const fetchRun = (run) => {
+        // MLflow holds the metrics of a run already averaged over every time series
+        // it evaluated, so this is the same call for single and multiple datasets.
+        axios.get(`/results/get_metric_list/${run}`)
+            .then(response => {
+                const data = response.data;
+                if (Array.isArray(data.labels) && Array.isArray(data.data) && data.data.length > 0) {
+                    setBarChartLabels(data.labels)
+                    setBarChartValues(data.data)
+                } else {
+                    setNoBarChart(true)
+                }
+                setLoadingBarChart(false)
+            })
+            .catch(error => {
+                setLoadingBarChart(false)
+                setNoBarChart(true)
+            })
+
+        // Which time series the run evaluated. A run over a single series, or a
+        // backend without this endpoint, falls back to the run's own artifacts.
+        axios.get(`/results/get_evaluation_series/${run}`)
+            .then(response => {
+                const available = Array.isArray(response.data?.series) ? response.data.series : []
+                setSeriesOptions(available)
+                setSeriesChosen(available.length > 0 ? available[0] : '')
+                fetchForecast(run, available.length > 0 ? available[0] : '')
+            })
+            .catch(error => {
+                setSeriesOptions([])
+                setSeriesChosen('')
+                fetchForecast(run, '')
+            })
+    }
+
+    const loadMetrics = () => {
+        if (experimentChosen === '') return
+
+        setRequested(true)
+        setBestRun('')
+        setBarChartLabels([])
+        setBarChartValues([])
+        setNoBarChart(false)
+        setLoadingBarChart(true)
+        setSeriesOptions([])
+        setSeriesChosen('')
+        setForecastChart(null)
+        setNoLineChart(false)
+        setLoadingLineChart(true)
+
+        axios.get(`/results/get_best_run_id_by_mlflow_experiment/${experimentChosen}/${metricChosen ? metricChosen : 'mape'}`)
             .then(response => {
                 setBestRun(response.data)
+                fetchRun(response.data)
             })
-    }, [experimentChosen])
+            .catch(error => {
+                setLoadingBarChart(false)
+                setLoadingLineChart(false)
+                setNoBarChart(true)
+                setNoLineChart(true)
+            })
+    }
+
+    const handleChangeSeries = (event) => {
+        setSeriesChosen(event.target.value)
+        if (bestRun) fetchForecast(bestRun, event.target.value)
+    }
 
     return (
         <>
@@ -166,10 +181,10 @@ const ByEvaluationMetric = () => {
                 </Grid>
                 <Grid item xs={12} md={6}>
                     <FormControl fullWidth required>
-                        <InputLabel id="demo-simple-select-label">Choose an experiment</InputLabel>
+                        <InputLabel id="experiment-select-label">Choose an experiment</InputLabel>
                         <Select
-                            labelId="demo-simple-select-label"
-                            id="demo-simple-select"
+                            labelId="experiment-select-label"
+                            id="experiment-select"
                             value={experimentChosen}
                             label="Choose an experiment"
                             onChange={e => setExperimentChosen(e.target.value)}
@@ -191,10 +206,10 @@ const ByEvaluationMetric = () => {
                 </Grid>
                 <Grid item xs={12} md={6}>
                     <FormControl fullWidth>
-                        <InputLabel id="demo-simple-select-label">Choose a metric</InputLabel>
+                        <InputLabel id="metric-select-label">Choose a metric</InputLabel>
                         <Select
-                            labelId="demo-simple-select-label"
-                            id="demo-simple-select"
+                            labelId="metric-select-label"
+                            id="metric-select"
                             value={metricChosen}
                             label="Choose a metric"
                             onChange={e => setMetricChosen(e.target.value)}
@@ -217,8 +232,9 @@ const ByEvaluationMetric = () => {
                 <Grid item xs={12} md={6}>
                     <FormControl fullWidth>
                         <TextField type={'number'} InputProps={{inputProps: {min: 0, max: 2000}}}
-                                   id="outlined-basic"
+                                   id="evaluation-samples"
                                    label="Evaluation samples" variant="outlined"
+                                   value={limit}
                                    onChange={e => setLimit(e.target.value)}/>
                     </FormControl>
                 </Grid>
@@ -232,7 +248,8 @@ const ByEvaluationMetric = () => {
                         <Typography variant={'subtitle1'}>DETAILS ON MLFLOW</Typography>
                     </Button>}
                     <Button variant={'contained'} component={'span'} size={'large'} color={'primary'}
-                            onClick={() => fetchMetrics(experimentChosen, metricChosen)}
+                            disabled={experimentChosen === ''}
+                            onClick={loadMetrics}
                             endIcon={<ChevronRight/>}><Typography variant={'subtitle1'}>LOAD
                         METRICS</Typography></Button>
                 </Stack>
@@ -240,109 +257,98 @@ const ByEvaluationMetric = () => {
 
             <Divider sx={{my: 4}}/>
 
-            <Grid container direction="row" alignItems="center" justifyItems={'center'}>
-                <Typography variant={'h4'} display={'flex'} alignItems={'center'}>
-                    <ChevronRightIcon
-                        fontSize={'large'}/> Model Evaluation Metrics
-                </Typography>
-            </Grid>
-            {noBarChart && <Alert severity="warning" sx={{my: 5}}>No data available for this experiment.</Alert>}
-            {loadingBarChart && <Loading/>}
+            {!requested && <Alert severity="info" sx={{my: 5}} data-testid={'byEvaluationMetricPrompt'}>
+                Choose an experiment, the evaluation metric to rank its runs by and how many evaluation samples to plot,
+                then select LOAD METRICS.
+            </Alert>}
 
-            {barChartValues.length > 1 && !loadingBarChart && <React.Fragment>
-                <Container>
-                    <Bar data={{
-                        labels: barChartLabels,
-                        datasets: [{
-                            label: 'Model Evaluation Metrics',
-                            data: barChartValues,
-                            backgroundColor: [
-                                'rgba(255, 99, 132, 0.2)',
-                                'rgba(54, 162, 235, 0.2)',
-                                'rgba(255, 206, 86, 0.2)',
-                                'rgba(75, 192, 192, 0.2)',
-                                'rgba(153, 102, 255, 0.2)',
-                                'rgba(255, 159, 64, 0.2)',
-                            ],
-                        }]
-                    }} options={{
-                        title: {
-                            display: true,
-                            fontSize: 20
-                        },
-                        legend: {
-                            display: true,
-                            position: 'right'
-                        }
-                    }}
-                    />
-                </Container>
-            </React.Fragment>}
+            {requested && <>
+                <Grid container direction="row" alignItems="center" justifyItems={'center'}>
+                    <Typography variant={'h4'} display={'flex'} alignItems={'center'}>
+                        <ChevronRightIcon
+                            fontSize={'large'}/> Model Evaluation Metrics
+                    </Typography>
+                </Grid>
+                {seriesOptions.length > 1 && !loadingBarChart && barChartValues.length > 0 &&
+                    <Typography variant={'body2'} color={'text.secondary'} sx={{mt: 1, ml: 5}}>
+                        Averaged over the {seriesOptions.length} evaluated time series, as logged in MLflow.
+                    </Typography>}
+                {noBarChart && <Alert severity="warning" sx={{my: 5}}>No data available for this experiment.</Alert>}
+                {loadingBarChart && <Loading/>}
 
-            <Divider sx={{my: 5}}/>
-
-            <Grid container direction="row" alignItems="center" justifyItems={'center'}>
-                <Typography variant={'h4'} display={'flex'} alignItems={'center'}>
-                    <ChevronRightIcon
-                        fontSize={'large'}/> Forecasted vs Actual Time Series
-                </Typography>
-            </Grid>
-            {noLineChart && <Alert severity="warning" sx={{my: 5}}>No data available for this experiment.</Alert>}
-            {loadingLineChart && <Loading/>}
-
-            <Divider sx={{mt: 5}}/>
-
-            {lineChartFirstValues.length > 1 && lineChartSecondValues.length > 1 && !loadingLineChart &&
-                <React.Fragment>
-                    <Container sx={{mb: 5}}>
-                        <Line options={{
-                            responsive: true,
-                            interaction: {
-                                mode: 'index',
-                                intersect: false,
+                {barChartValues.length > 0 && !loadingBarChart && <React.Fragment>
+                    <Container>
+                        <Bar data={{
+                            labels: barChartLabels,
+                            datasets: [{
+                                label: 'Model Evaluation Metrics',
+                                data: barChartValues,
+                                backgroundColor: [
+                                    'rgba(255, 99, 132, 0.2)',
+                                    'rgba(54, 162, 235, 0.2)',
+                                    'rgba(255, 206, 86, 0.2)',
+                                    'rgba(75, 192, 192, 0.2)',
+                                    'rgba(153, 102, 255, 0.2)',
+                                    'rgba(255, 159, 64, 0.2)',
+                                ],
+                            }]
+                        }} options={{
+                            title: {
+                                display: true,
+                                fontSize: 20
                             },
-                            stacked: false,
-                            plugins: {
-                                title: {
-                                    display: true,
-                                },
-                            },
-                            scales: {
-                                y: {
-                                    type: 'linear',
-                                    display: true,
-                                    position: 'left',
-                                },
-                                y1: {
-                                    type: 'linear',
-                                    display: true,
-                                    position: 'right',
-                                    grid: {
-                                        drawOnChartArea: false,
-                                    },
-                                },
-                            },
-                        }} data={{
-                            labels: lineChartLabels,
-                            datasets: [
-                                {
-                                    label: 'Actual',
-                                    data: lineChartFirstValues,
-                                    borderColor: 'rgb(255, 99, 132)',
-                                    backgroundColor: 'rgba(255, 99, 132, 0.5)',
-                                    yAxisID: 'y',
-                                },
-                                {
-                                    label: 'Forecast',
-                                    data: lineChartSecondValues,
-                                    borderColor: 'rgb(53, 162, 235)',
-                                    backgroundColor: 'rgba(53, 162, 235, 0.5)',
-                                    yAxisID: 'y',
-                                },
-                            ],
-                        }}/>
+                            legend: {
+                                display: true,
+                                position: 'right'
+                            }
+                        }}
+                        />
                     </Container>
                 </React.Fragment>}
+
+                <Divider sx={{my: 5}}/>
+
+                <Grid container direction="row" alignItems="center" justifyItems={'center'}>
+                    <Typography variant={'h4'} display={'flex'} alignItems={'center'}>
+                        <ChevronRightIcon
+                            fontSize={'large'}/> Forecasted vs Actual Time Series
+                    </Typography>
+                </Grid>
+
+                {seriesOptions.length > 1 && <FormControl sx={{my: 3, minWidth: '320px'}}>
+                    <InputLabel id="series-select-label">Time series</InputLabel>
+                    <Select
+                        labelId="series-select-label"
+                        id="series-select"
+                        value={seriesChosen}
+                        label="Time series"
+                        onChange={handleChangeSeries}
+                    >
+                        {seriesOptions.map(series => (
+                            <MenuItem key={series} value={series}>{series}</MenuItem>))}
+                    </Select>
+                </FormControl>}
+
+                {noLineChart && <Alert severity="warning" sx={{my: 5}}>No data available for this experiment.</Alert>}
+                {loadingLineChart && <Loading/>}
+
+                <Divider sx={{mt: 5}}/>
+
+                {forecastChart && !loadingLineChart &&
+                    <React.Fragment>
+                        <Container sx={{mb: 5}}>
+                            <Line options={forecastChartOptions} data={{
+                                labels: forecastChart.labels,
+                                datasets: forecastChart.datasets,
+                            }}/>
+                            {forecastChart.multivariate &&
+                                <Typography variant={'body2'} color={'text.secondary'} sx={{mt: 2}}>
+                                    {forecastChart.componentCount} components; the actual series is drawn solid and its
+                                    forecast dashed, in the same colour.
+                                </Typography>}
+                        </Container>
+                    </React.Fragment>}
+            </>}
         </>
     );
 }
