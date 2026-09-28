@@ -18,7 +18,7 @@ const axiosInstance = axios.create({
     baseURL: baseURL,
     headers: defaultHeaders,
     withCredentials: true, // Enable credentials
-    timeout: 300000, // 5 minutes, large file uploads can take a while
+    timeout: 30000, // Increase timeout for larger file uploads
     // Add proper CORS handling
     validateStatus: function (status) {
         return status >= 200 && status < 300; // Accept only success status codes
@@ -163,7 +163,7 @@ export const axiosSecond = axios.create({
     baseURL: baseURL,
     headers: defaultHeaders,
     withCredentials: true,
-    timeout: 300000, // 5 minutes, large file uploads can take a while
+    timeout: 30000, // Increase timeout for larger file uploads
     validateStatus: function (status) {
         return status >= 200 && status < 300;
     }
