@@ -102,13 +102,14 @@ const lineStyle = (color, {dashed, pointStyle, marked}) => ({
 export const buildForecastChart = (payload) => {
     const actual = normalizeSplit(payload?.actual);
     const forecast = normalizeSplit(payload?.forecast);
-    if (!actual || !forecast) return null;
+    // Either one on its own is still worth drawing; only both missing is "no data".
+    if (!actual && !forecast) return null;
 
-    const labels = sortTimestamps([...new Set([...actual.index, ...forecast.index])]);
+    const labels = sortTimestamps([...new Set([...(actual?.index || []), ...(forecast?.index || [])])]);
     if (labels.length === 0) return null;
 
     const positions = new Map(labels.map((label, i) => [label, i]));
-    const componentCount = Math.max(actual.columns.length, forecast.columns.length);
+    const componentCount = Math.max(actual?.columns.length || 0, forecast?.columns.length || 0);
     const multivariate = componentCount > 1;
 
     const datasets = [];
@@ -120,14 +121,14 @@ export const buildForecastChart = (payload) => {
         // Each line is named after its own frame's column, since the forecast of a
         // probabilistic model carries one column per quantile rather than the
         // component names of the actual series.
-        if (component < actual.columns.length) {
+        if (actual && component < actual.columns.length) {
             datasets.push({
                 label: multivariate ? `${actual.columns[component]} · actual` : 'Actual',
                 data: alignToLabels(actual, component, positions, labels.length),
                 ...lineStyle(multivariate ? color : COMPONENT_COLORS[0], {...style, dashed: false}),
             });
         }
-        if (component < forecast.columns.length) {
+        if (forecast && component < forecast.columns.length) {
             datasets.push({
                 label: multivariate ? `${forecast.columns[component]} · forecast` : 'Forecast',
                 data: alignToLabels(forecast, component, positions, labels.length),
