@@ -2,6 +2,9 @@ import QueryStatsIcon from '@mui/icons-material/QueryStats';
 import ModelTrainingIcon from '@mui/icons-material/ModelTraining';
 import RuleIcon from '@mui/icons-material/Rule';
 import TerminalIcon from '@mui/icons-material/Terminal';
+import AutoAwesomeIcon from '@mui/icons-material/AutoAwesome';
+
+const foundationModelsEnabled = process.env.REACT_APP_FOUNDATION_MODELS !== "False";
 
 export const servicesHomepage = [
     {
@@ -18,9 +21,18 @@ export const servicesHomepage = [
         'title': 'Model Evaluation',
         'description': 'Evaluate your Machine Learning models and visualise Actual vs Forecasted values.',
         'icon': <RuleIcon style={{color: 'white', fontSize: '80px'}}/>,
-        'image': 'https://freerangestock.com/sample/117860/artificial-intelligence--machine-learning--digital-brain-mesh-.jpg',
+        'image': '/images/model-evaluation.jpg',
         'link': '/experiment-tracking',
         'roles': ['inergy_admin', 'energy_engineer']
+    },
+    {
+        'id': 'foundation_models',
+        'title': 'Foundation Models',
+        'description': 'Forecast with a pre-trained foundation model, without training anything yourself.',
+        'icon': <AutoAwesomeIcon style={{color: 'white', fontSize: '80px'}}/>,
+        'image': 'https://images.unsplash.com/photo-1620712943543-bcc4688e7485?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1170&q=80',
+        'link': '/foundation-models',
+        'roles': ['inergy_admin', 'data_scientist', 'energy_engineer']
     },
     {
         'id': 'model_deployment',
@@ -40,4 +52,4 @@ export const servicesHomepage = [
         'link': '/monitoring',
         'roles': ['inergy_admin']
     },
-]
+].filter(service => service.id !== 'foundation_models' || foundationModelsEnabled)

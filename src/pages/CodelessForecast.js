@@ -9,7 +9,6 @@ import MuiAlert from '@mui/material/Alert';
 import Snackbar from '@mui/material/Snackbar';
 
 import Breadcrumb from "../components/layout/Breadcrumb";
-import FullPageLoading from "../components/layout/FullPageLoading";
 import DatasetConfiguration from "../components/loadForecastingPipeline/DatasetConfiguration";
 import ModelTrainingSetup from "../components/loadForecastingPipeline/ModelTrainingSetup";
 import ModelEvaluationSetup from "../components/loadForecastingPipeline/ModelEvaluationSetup";
@@ -42,13 +41,6 @@ const CodelessForecast = () => {
     const [allowed, setAllowed] = useState(null);
 
     useEffect(() => {
-        // If authentication is disabled, allow access without checking roles
-        if (!authenticationEnabled) {
-            setAllowed(true);
-            return;
-        }
-
-        // Otherwise, check authentication status
         if (initialized) {
             // Check auth method
             const authMethod = localStorage.getItem('authMethod');
@@ -67,6 +59,10 @@ const CodelessForecast = () => {
             } else {
                 navigate('/');
             }
+        }
+
+        if (!authenticationEnabled) {
+            setAllowed(true);
         }
     }, [initialized, keycloak.authenticated, keycloak.realmAccess?.roles, navigate, authenticationEnabled]);
 
@@ -112,6 +108,21 @@ const CodelessForecast = () => {
     const [forecastHorizon, setForecastHorizon] = useState(24)
     const [ignorePrevious, setIgnorePrevious] = useState(true)
     const [seriesUri, setSeriesUri] = useState('')
+
+    useEffect(() => {
+        if (initialized) {
+            if (keycloak.realmAccess) {
+                let roles = keycloak.realmAccess.roles
+                if ((roles.includes('data_scientist') || roles.includes('inergy_admin'))) {
+                    setAllowed(true)
+                } else navigate('/')
+            }
+        }
+
+        if (!authenticationEnabled) {
+            setAllowed(true)
+        }
+    }, [initialized])
 
     useEffect(() => {
         if ((initialized && experimentResolution) || (!authenticationEnabled && experimentResolution)) {
@@ -225,8 +236,7 @@ const CodelessForecast = () => {
         <>
             <Breadcrumb breadcrumbs={breadcrumbs} welcome_msg={''}/>
 
-            {/* Show content if auth is disabled or user has proper permissions */}
-            {(allowed || !authenticationEnabled) && <>
+            {allowed && <>
                 {/* Dataset Configuration */}
                 <DatasetConfiguration
                     resetState={resetState}
@@ -344,7 +354,6 @@ const CodelessForecast = () => {
                 />
             </>}
 
-            {loading && <FullPageLoading/>}
             <Snackbar open={newFileSuccess} autoHideDuration={3000} onClose={closeSnackbar}>
                 <AlertCustom onClose={closeSnackbar} severity="success" sx={{width: '100%', mb: 5}}>
                     The new file has been successfully uploaded!

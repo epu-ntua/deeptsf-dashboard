@@ -1,0 +1,62 @@
+# nginx config for the Docker Compose deployment.
+#
+# Serves the React build and proxies /chronos to the Chronos-2 inference server,
+# the same way the Kubernetes deployment does with its chronos ingress and
+# chronos-proxy (helm-chart/templates/chronos-proxy-cm.yaml in the GitLab repo).
+#
+# ${CHRONOS_*} values are substituted at container start by the nginx image's
+# envsubst step (limited to CHRONOS_* by NGINX_ENVSUBST_FILTER).
+server {
+    listen 3001;
+    server_name _;
+
+    root /usr/share/nginx/html;
+    index index.html;
+
+    gzip on;
+    gzip_types text/plain text/css application/javascript application/json image/svg+xml;
+
+    # Series and covariate CSV uploads.
+    client_max_body_size 200m;
+
+    location /chronos/ {
+        # Resolve the upstream per request through Docker's DNS, so nginx still
+        # starts when the Chronos-2 host is briefly unreachable.
+        resolver 127.0.0.11 valid=300s ipv6=off;
+        set $chronos_host ${CHRONOS_HOST};
+
+        # Strip the /chronos prefix, so Chronos-2 sees /forecast_file.
+        rewrite ^/chronos/(.*)$ /$1 break;
+        proxy_pass https://$chronos_host;
+        proxy_http_version 1.1;
+
+        # Host header and TLS SNI must both name the upstream, not our host.
+        proxy_set_header Host $chronos_host;
+        proxy_ssl_server_name on;
+        proxy_ssl_name $chronos_host;
+
+        # Replace whatever the browser sent with the real API token.
+        proxy_set_header Authorization "Bearer ${CHRONOS_API_TOKEN}";
+
+        proxy_set_header Connection "";
+        proxy_set_header X-Forwarded-Proto https;
+
+        # Inference runs on CPU and can take several minutes.
+        proxy_connect_timeout 75s;
+        proxy_send_timeout 900s;
+        proxy_read_timeout 900s;
+
+        # Do not buffer the whole upload before forwarding it.
+        proxy_request_buffering off;
+    }
+
+    # Single page app: unknown paths fall back to index.html, like `serve -s`.
+    location / {
+        try_files $uri $uri/ /index.html;
+    }
+
+    # Never cache index.html, so a rebuilt image is picked up on reload.
+    location = /index.html {
+        add_header Cache-Control "no-cache";
+    }
+}

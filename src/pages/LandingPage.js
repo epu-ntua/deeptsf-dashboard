@@ -23,9 +23,9 @@ const LandingPage = () => {
                             <Typography variant="h5" component="p" color="textSecondary" paragraph>
                                 A machine learning operations (MLOps) framework for time series forecasting.
                             </Typography>
-                            <Button variant="contained" color="primary" onClick={handleLogin} style={{ fontSize: '1rem', padding: theme.spacing(1.5, 3) }}>
+                            {/* <Button variant="contained" color="primary" onClick={handleLogin} style={{ fontSize: '1rem', padding: theme.spacing(1.5, 3) }}>
                                 Explore
-                            </Button>
+                            </Button> */}
                         </Grid>
                         {/* Right: Image */}
                         <Grid item xs={12} md={6}>

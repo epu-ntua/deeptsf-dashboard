@@ -94,13 +94,6 @@ const ExperimentTracking = () => {
     const [allowed, setAllowed] = useState(null)
 
     useEffect(() => {
-        // If authentication is disabled, allow access without checking roles
-        if (!authenticationEnabled) {
-            setAllowed(true);
-            return;
-        }
-
-        // Otherwise check authentication status and roles
         if (initialized) {
             // Check auth method
             const authMethod = localStorage.getItem('authMethod');
@@ -120,6 +113,10 @@ const ExperimentTracking = () => {
                 navigate('/');
             }
         }
+
+        if (!authenticationEnabled) {
+            setAllowed(true);
+        }
     }, [initialized, keycloak.authenticated, keycloak.realmAccess?.roles, navigate, authenticationEnabled])
 
     const [value, setValue] = useState(0);
@@ -131,8 +128,7 @@ const ExperimentTracking = () => {
     return (
         <>
             <Breadcrumb breadcrumbs={breadcrumbs} welcome_msg={''}/>
-            {/* Show content if auth is disabled or user has proper permissions */}
-            {(allowed || !authenticationEnabled) && 
+            {allowed &&
                 <Container maxWidth={'xl'} sx={{my: 5}} data-testid={'experimentTrackingTrackExperimentSection'}>
                     <Typography component={'span'} variant={'h4'} fontWeight={'bold'} sx={{mb: 3}}>Track your
                         experiment</Typography>
@@ -153,6 +149,7 @@ const ExperimentTracking = () => {
                 </Container>}
         </>
     );
+    // eslint-disable
 }
 
 export default ExperimentTracking;

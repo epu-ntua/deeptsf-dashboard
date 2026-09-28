@@ -1,6 +1,8 @@
 import axios from 'axios';
 
 const baseURL = process.env.REACT_APP_BACKEND_BASE_URL;
+// Fix the WebSocket URL - remove potential double-slash issue
+const wsURL = process.env.REACT_APP_BACKEND_WS_URL || baseURL?.replace('https://', 'wss://').replace('http://', 'ws://');
 
 // Modify the default headers
 const defaultHeaders = {
@@ -8,12 +10,15 @@ const defaultHeaders = {
     'Accept': 'application/json'
 };
 
+// Set global axios default timeout to 15 minutes (for all requests, including file uploads)
+axios.defaults.timeout = 15 * 60 * 1000;
+
 // Create axios instance with credentials support
 const axiosInstance = axios.create({
     baseURL: baseURL,
     headers: defaultHeaders,
     withCredentials: true, // Enable credentials
-    timeout: 10000,
+    timeout: 300000, // 5 minutes, large file uploads can take a while
     // Add proper CORS handling
     validateStatus: function (status) {
         return status >= 200 && status < 300; // Accept only success status codes
@@ -63,7 +68,7 @@ axiosInstance.interceptors.response.use(
             
             // Check if unauthorized due to expired token
             const authMethod = localStorage.getItem('authMethod');
-            if (authMethod === 'keycloak') {
+            if (authMethod === 'keycloak' || authMethod === 'virto') {
                 // Redirect to keycloak login
                 window.location.href = '/';
             }
@@ -101,6 +106,56 @@ axiosInstance.interceptors.response.use(
     }
 );
 
+// Create a websocket connection helper
+export const createTaskWebSocket = (taskId, token, callbacks = {}) => {
+    if (!wsURL) {
+        console.error('WebSocket URL is not configured');
+        if (callbacks.onError) callbacks.onError(new Error('WebSocket URL is not configured'));
+        return null;
+    }
+    
+    try {
+        // Fix the WebSocket URL path construction to match backend
+        // Avoid double-slashes when combining base URL with path
+        const socketUrl = `${wsURL}/ws/task-status/${taskId}?token=${token}`.replace(/([^:]\/)\/+/g, "$1");
+        console.log('Connecting to WebSocket URL:', socketUrl);
+        
+        const socket = new WebSocket(socketUrl);
+        
+        socket.onopen = () => {
+            console.log('WebSocket connection established');
+            if (callbacks.onOpen) callbacks.onOpen();
+        };
+        
+        socket.onmessage = (event) => {
+            try {
+                const data = JSON.parse(event.data);
+                console.log('WebSocket message received:', data);
+                if (callbacks.onMessage) callbacks.onMessage(data);
+            } catch (error) {
+                console.error('Error parsing WebSocket message:', error);
+                if (callbacks.onError) callbacks.onError(error);
+            }
+        };
+        
+        socket.onerror = (event) => {
+            console.error('WebSocket error:', event);
+            if (callbacks.onError) callbacks.onError(event);
+        };
+        
+        socket.onclose = (event) => {
+            console.log('WebSocket connection closed', event);
+            if (callbacks.onClose) callbacks.onClose(event);
+        };
+        
+        return socket;
+    } catch (error) {
+        console.error('Error creating WebSocket:', error);
+        if (callbacks.onError) callbacks.onError(error);
+        return null;
+    }
+};
+
 export default axiosInstance;
 
 // Create second instance with same configuration
@@ -108,7 +163,7 @@ export const axiosSecond = axios.create({
     baseURL: baseURL,
     headers: defaultHeaders,
     withCredentials: true,
-    timeout: 10000,
+    timeout: 300000, // 5 minutes, large file uploads can take a while
     validateStatus: function (status) {
         return status >= 200 && status < 300;
     }
