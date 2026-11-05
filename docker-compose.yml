@@ -29,7 +29,7 @@ services:
       CHRONOS_API_TOKEN: ${CHRONOS_API_TOKEN:-}
       CHRONOS_HOST: ${CHRONOS_HOST:-chronos2-inference-server.aiodp.ai}
     ports:
-      - '3003:3001'
+      - '127.0.0.1:3003:3001'
     networks:
       - appnet
     # environment:
