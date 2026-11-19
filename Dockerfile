@@ -53,6 +53,7 @@ COPY nginx/default.conf.template /etc/nginx/templates/default.conf.template
 
 # Only substitute our own variables, so nginx variables like $uri survive envsubst
 ENV NGINX_ENVSUBST_FILTER=^CHRONOS_
+ENV CHRONOS_SCHEME=https
 ENV CHRONOS_HOST=chronos2-inference-server.aiodp.ai
 ENV CHRONOS_API_TOKEN=
 

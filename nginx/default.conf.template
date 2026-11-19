@@ -24,13 +24,17 @@ server {
         # starts when the Chronos-2 host is briefly unreachable.
         resolver 127.0.0.11 valid=300s ipv6=off;
         set $chronos_host ${CHRONOS_HOST};
+        # https for a remote server; http for a Chronos-2 container next to
+        # this one (docker compose: CHRONOS_SCHEME=http CHRONOS_HOST=chronos:8000).
+        set $chronos_scheme ${CHRONOS_SCHEME};
 
         # Strip the /chronos prefix, so Chronos-2 sees /forecast_file.
         rewrite ^/chronos/(.*)$ /$1 break;
-        proxy_pass https://$chronos_host;
+        proxy_pass $chronos_scheme://$chronos_host;
         proxy_http_version 1.1;
 
-        # Host header and TLS SNI must both name the upstream, not our host.
+        # Host header and TLS SNI must both name the upstream, not our host
+        # (the TLS settings are ignored when CHRONOS_SCHEME=http).
         proxy_set_header Host $chronos_host;
         proxy_ssl_server_name on;
         proxy_ssl_name $chronos_host;
