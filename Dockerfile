@@ -1,4 +1,7 @@
-FROM node:14-alpine AS development
+# The build output is static files, the same for every architecture, so build
+# them once on the build machine's own platform instead of under emulation in a
+# multi-platform build. Only the nginx stage below is per-platform.
+FROM --platform=$BUILDPLATFORM node:14-alpine AS development
 
 # Add a work directory
 WORKDIR /app
