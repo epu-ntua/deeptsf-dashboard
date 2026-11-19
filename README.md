@@ -24,6 +24,9 @@ Before proceeding, follow the instructions below.
    Codeless Forecast offer a list of the user's MLflow experiments instead of a free-text experiment name.
 
 2. **Foundation Models (Chronos-2):** set `CHRONOS_API_TOKEN` in `.env`. Without it every forecast returns 401.
+   `/chronos` goes to the remote server by default (`CHRONOS_SCHEME=https`, `CHRONOS_HOST=chronos2-inference-server.aiodp.ai`).
+   For the Chronos-2 container of a DeepTSF stack on the same network, set `CHRONOS_SCHEME=http`,
+   `CHRONOS_HOST=<its CHRONOS_HOSTNAME>:8000` and the same `CHRONOS_API_TOKEN` as that stack.
 
 3. **Docker Compose:** `docker compose up -d --build`
 
