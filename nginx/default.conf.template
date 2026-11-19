@@ -69,4 +69,9 @@ server {
     location = /index.html {
         add_header Cache-Control "no-cache";
     }
+
+    # Written at container start from DASHBOARD_*, so never cache it either.
+    location = /config.js {
+        add_header Cache-Control "no-cache";
+    }
 }

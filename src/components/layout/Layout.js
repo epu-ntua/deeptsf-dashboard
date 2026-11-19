@@ -42,6 +42,7 @@ import MenuButton from "./MenuButton";
 import {appbarMenuButtonItems} from "../../appbarMenuButtonItems";
 import {useKeycloak} from "@react-keycloak/web";
 import VirtoLoginForm from '../VirtoLoginForm';
+import {authEnabled, backendUrl, dagsterUrl, mlflowUrl} from "../../config";
 
 const drawerWidth = 260;
 
@@ -151,7 +152,7 @@ export default function Layout({children}) {
     const handleDrawerOpen = () => setDrawerOpen(true);
     const handleDrawerClose = () => setDrawerOpen(false);
 
-    const authenticationEnabled = process.env.REACT_APP_AUTH === "True";
+    const authenticationEnabled = authEnabled;
 
     useEffect(() => {
         // Check authentication status and update state
@@ -227,8 +228,8 @@ export default function Layout({children}) {
                 path: "/monitoring"
             });
 
-            const dagsterEndpoint = process.env.REACT_APP_DAGSTER_ENDPOINT_URL;
-            const mlflowEndpoint = process.env.REACT_APP_MLFLOW;
+            const dagsterEndpoint = dagsterUrl;
+            const mlflowEndpoint = mlflowUrl;
             if (mlflowEndpoint !== "" && dagsterEndpoint !== "") {
               updatedMenuItems.push(
                 {
@@ -242,7 +243,7 @@ export default function Layout({children}) {
                     />
                   ),
                   path: location.pathname + " ",
-                  link: process.env.REACT_APP_MLFLOW,
+                  link: mlflowUrl,
                 },
                 {
                   text: "Dagster Dashboard",
@@ -255,7 +256,7 @@ export default function Layout({children}) {
                     />
                   ),
                   path: location.pathname + " ",
-                  link: process.env.REACT_APP_DAGSTER_ENDPOINT_URL,
+                  link: dagsterUrl,
                 }
               );
             }
@@ -273,7 +274,7 @@ export default function Layout({children}) {
         }
         
         console.log('JWT Token from URL:', jwtToken);
-        axios.post(`${process.env.REACT_APP_BACKEND_BASE_URL}/api/auth`, { jwt: jwtToken }, {
+        axios.post(`${backendUrl}/api/auth`, { jwt: jwtToken }, {
             headers: {
                 'Content-Type': 'application/json',
                 'Accept': 'application/json'
@@ -329,13 +330,13 @@ export default function Layout({children}) {
                             <MenuIcon/>
                         </IconButton>
                         <h3 style={{color: 'white'}}>DeepTSF</h3>
-                        {keycloak.authenticated === true || localStorage.getItem('authMethod') === 'virto' ? (
+                        {authenticationEnabled && (keycloak.authenticated === true || localStorage.getItem('authMethod') === 'virto') ? (
                             <React.Fragment>
                                 <Typography style={{
                                     marginLeft: 'auto',
                                     color: 'white'
                                 }}>
-                                    Welcome, {keycloak.authenticated ? keycloak.tokenParsed.preferred_username : localStorage.getItem('virtoUsername')}
+                                    Welcome, {keycloak.authenticated ? keycloak.tokenParsed?.preferred_username : localStorage.getItem('virtoUsername')}
                                 </Typography>
                                 <MenuButton subLinks={appbarMenuButtonItems} signout={handleSignOut}/>
                             </React.Fragment>
@@ -396,7 +397,14 @@ export default function Layout({children}) {
                     </List>
                     <Divider/>
 
-                    <List>
+                    {/* With auth off there is nothing to sign in to or out of: only the profile link. */}
+                    {!authenticationEnabled && (
+                        <List>
+                            <SignedInLinks navigate={navigate} location={location}/>
+                        </List>
+                    )}
+
+                    {authenticationEnabled && <List>
                         {keycloak.authenticated === false && localStorage.getItem('authMethod') !== 'virto' && <SignedOutLinks navigate={navigate} location={location}/>}
                         {keycloak.authenticated === true || localStorage.getItem('authMethod') === 'virto' ? (
                             <SignedInLinks navigate={navigate} location={location} handleSignOut={handleSignOut}/>
@@ -413,7 +421,7 @@ export default function Layout({children}) {
                         {showVirtoLoginForm && !keycloak.authenticated && localStorage.getItem('authMethod') !== 'virto' && <VirtoLoginForm />}
                         {virtoResponse && <Typography>{virtoResponse}</Typography>}
                         {virtoError && <Typography color="error">{virtoError}</Typography>}
-                    </List>
+                    </List>}
 
                 </Drawer>
                 <Main open={drawerOpen} style={{overflow: 'hidden', paddingBottom: 0}}>

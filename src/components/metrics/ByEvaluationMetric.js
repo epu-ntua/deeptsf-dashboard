@@ -25,6 +25,7 @@ import Loading from "../layout/Loading";
 import {Bar, Line} from "react-chartjs-2";
 
 import {buildForecastChart, forecastChartOptions} from "./forecastChart";
+import {mlflowUrl} from "../../config";
 
 const DEFAULT_SAMPLES = 200
 
@@ -243,7 +244,7 @@ const ByEvaluationMetric = () => {
                     {bestRun && <Button variant={'contained'} component={'span'} size={'large'} color={'warning'}
                                         sx={{ml: 'auto'}}
                                         endIcon={<ChevronRight/>}
-                                        onClick={() => window.open(`${process.env.REACT_APP_MLFLOW}/#/experiments/${experimentChosen}/runs/${bestRun}`, '_blank')}
+                                        onClick={() => window.open(`${mlflowUrl}/#/experiments/${experimentChosen}/runs/${bestRun}`, '_blank')}
                     >
                         <Typography variant={'subtitle1'}>DETAILS ON MLFLOW</Typography>
                     </Button>}

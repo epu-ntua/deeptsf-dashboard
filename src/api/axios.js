@@ -1,6 +1,7 @@
 import axios from 'axios';
+import { backendUrl } from '../config';
 
-const baseURL = process.env.REACT_APP_BACKEND_BASE_URL;
+const baseURL = backendUrl;
 // Fix the WebSocket URL - remove potential double-slash issue
 const wsURL = process.env.REACT_APP_BACKEND_WS_URL || baseURL?.replace('https://', 'wss://').replace('http://', 'ws://');
 

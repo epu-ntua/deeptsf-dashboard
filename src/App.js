@@ -15,6 +15,7 @@ import CodelessForecast from "./pages/CodelessForecast";
 import ExperimentTracking from "./pages/ExperimentTracking";
 import SystemMonitoring from "./pages/SystemMonitoring";
 import FoundationModels from "./pages/FoundationModels";
+import {backendUrl} from "./config";
 
 // Load environment variables
 const primary = '#0047BB'; // '#97A94D'; // fallback if env var isn't set
@@ -51,7 +52,7 @@ function App() {
     const {keycloak} = useKeycloak();
     
     // Remove CORS headers from default axios config
-    axios.defaults.baseURL = process.env.REACT_APP_BACKEND_BASE_URL;
+    axios.defaults.baseURL = backendUrl;
     axios.defaults.withCredentials = true;
     axios.defaults.headers.common['Content-Type'] = 'application/json';
     

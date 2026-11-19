@@ -3,6 +3,7 @@ import { Navigate, Outlet, useLocation } from 'react-router-dom';
 import { useKeycloak } from '@react-keycloak/web';
 import useAuthContext from "../hooks/useAuthContext";
 import axiosInstance from '../api/axios';
+import { authEnabled } from '../config';
 
 const RequireAuth = () => {
     const { keycloak } = useKeycloak();
@@ -23,7 +24,8 @@ const RequireAuth = () => {
         }
     }, [keycloakAuthenticated, virtoAuthenticated, keycloak.token]);
 
-    if (keycloakAuthenticated || virtoAuthenticated) {
+    // With auth off there is no login, so every protected page is open.
+    if (!authEnabled || keycloakAuthenticated || virtoAuthenticated) {
         return <Outlet />;
     } else {
         // Redirect to homepage if not authenticated

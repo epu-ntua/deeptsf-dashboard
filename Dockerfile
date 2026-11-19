@@ -58,5 +58,13 @@ ENV CHRONOS_HOST=chronos2-inference-server.aiodp.ai
 ENV CHRONOS_API_TOKEN=
 ENV CHRONOS_SSL_VERIFY=on
 
+# Service URLs written to /config.js at container start. Empty = use the
+# REACT_APP_* value the bundle was built with.
+COPY nginx/40-dashboard-config.sh /docker-entrypoint.d/40-dashboard-config.sh
+RUN chmod +x /docker-entrypoint.d/40-dashboard-config.sh
+ENV DASHBOARD_BACKEND_URL=
+ENV DASHBOARD_MLFLOW_URL=
+ENV DASHBOARD_DAGSTER_URL=
+
 # Expose port
 EXPOSE 3001

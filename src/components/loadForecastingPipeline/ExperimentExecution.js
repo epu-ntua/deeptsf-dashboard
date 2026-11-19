@@ -9,6 +9,7 @@ import CircularProgress from "@mui/material/CircularProgress";
 import DoneAllIcon from "@mui/icons-material/DoneAll";
 import Container from "@mui/material/Container";
 import axiosInstance from "../../api/axios";
+import {mlflowUrl} from "../../config";
 
 const ExperimentExecution = ({
                                  executionLoading,
@@ -40,8 +41,6 @@ const ExperimentExecution = ({
                                  imputationMethod,
                                  format
                              }) => {
-    const authenticationEnabled = process.env.REACT_APP_AUTH === "True"
-
     const handleExecute = () => {
         setExecutionLoading(true)
         setExecutionInitiated(true)
@@ -133,7 +132,7 @@ const ExperimentExecution = ({
                             <Button variant={'contained'} component={'span'} size={'large'} color={'warning'}
                                     sx={{ml: 'auto'}} fullWidth
                                     endIcon={<ChevronRight/>}
-                                    onClick={() => window.open(process.env.REACT_APP_MLFLOW, '_blank')}
+                                    onClick={() => window.open(mlflowUrl, '_blank')}
                             >
                                 <Typography variant={'h6'}>Visit MLFlow Server</Typography>
                             </Button>

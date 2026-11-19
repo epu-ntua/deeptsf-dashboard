@@ -1,4 +1,5 @@
 import Keycloak from "keycloak-js";
+import {authEnabled} from "./config";
 
 const createKeycloakInstance = (enabled) => {
     if (enabled) {
@@ -30,12 +31,18 @@ const createKeycloakInstance = (enabled) => {
     } else {
         // Create a dummy Keycloak instance that doesn't do authentication
         const dummyKeycloak = {
-            init: () => Promise.resolve(),
+            // ReactKeycloakProvider attaches onReady before calling init() and only
+            // marks itself initialized once onReady fires, so fire it on the next tick.
+            init() {
+                setTimeout(() => this.onReady?.(true), 0);
+                return Promise.resolve(true);
+            },
             login: () => {},
             logout: () => {},
             authenticated: false,
             realmAccess: { roles: [] },
             token: null,
+            tokenParsed: { preferred_username: 'local' },
             onTokenExpired: () => {},
             updateToken: () => Promise.resolve(false),
             // Add other Keycloak methods you may use as empty functions
@@ -48,8 +55,7 @@ const createKeycloakInstance = (enabled) => {
     }
 };
 
-const shouldAuthenticate = process.env.REACT_APP_AUTH === "True";
-console.log(shouldAuthenticate)
-const my_keycloak = createKeycloakInstance(shouldAuthenticate);
+console.log(authEnabled)
+const my_keycloak = createKeycloakInstance(authEnabled);
 
 export default my_keycloak;

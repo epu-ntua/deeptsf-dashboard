@@ -31,6 +31,10 @@ services:
       CHRONOS_SCHEME: ${CHRONOS_SCHEME:-https}
       CHRONOS_SSL_VERIFY: ${CHRONOS_SSL_VERIFY:-on}
       CHRONOS_HOST: ${CHRONOS_HOST:-chronos2-inference-server.aiodp.ai}
+      # Service URLs read at container start; empty = the REACT_APP_* build value.
+      DASHBOARD_BACKEND_URL: ${DASHBOARD_BACKEND_URL:-}
+      DASHBOARD_MLFLOW_URL: ${DASHBOARD_MLFLOW_URL:-}
+      DASHBOARD_DAGSTER_URL: ${DASHBOARD_DAGSTER_URL:-}
     ports:
       - '127.0.0.1:3003:3001'
     networks:

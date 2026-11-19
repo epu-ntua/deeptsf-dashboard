@@ -9,6 +9,7 @@ import MemoryUsageBars from "../components/systemMonitoring/MemoryUsageBars";
 import GpuUsageBars from "../components/systemMonitoring/GpuUsageBars";
 import {useKeycloak} from "@react-keycloak/web";
 import {Link, useNavigate} from "react-router-dom";
+import {authEnabled} from "../config";
 
 const breadcrumbs = [
     <Link className={'breadcrumbLink'} key="1" to="/">
@@ -25,13 +26,19 @@ const breadcrumbs = [
 ];
 
 const SystemMonitoring = () => {
-    const authenticationEnabled = process.env.REACT_APP_AUTH === "True"
+    const authenticationEnabled = authEnabled
     const {keycloak, initialized} = useKeycloak()
     const navigate = useNavigate();
 
     const [allowed, setAllowed] = useState(null);
 
     useEffect(() => {
+        // With auth off there are no roles to check: always allowed.
+        if (!authenticationEnabled) {
+            setAllowed(true);
+            return;
+        }
+
         if (initialized) {
             // Check auth method
             const authMethod = localStorage.getItem('authMethod');
@@ -50,10 +57,6 @@ const SystemMonitoring = () => {
             } else {
                 navigate('/');
             }
-        }
-
-        if (!authenticationEnabled) {
-            setAllowed(true);
         }
     }, [initialized, keycloak.authenticated, keycloak.realmAccess?.roles, authenticationEnabled, navigate]);
 

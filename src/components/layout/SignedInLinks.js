@@ -20,13 +20,13 @@ const SignedInLinks = ({classes, navigate, location, setAuth, handleSignOut}) =>
                 <ListItemText primary={'My Profile'}></ListItemText>
             </ListItemButton>
 
-            <ListItemButton
+            {handleSignOut && <ListItemButton
                 onClick={handleSignOut}
                 key={'Sign Out'}
             >
                 <ListItemIcon>{<LogoutOutlinedIcon color="secondary"/>}</ListItemIcon>
                 <ListItemText primary={'Sign Out'}></ListItemText>
-            </ListItemButton>
+            </ListItemButton>}
         </>
     );
 }

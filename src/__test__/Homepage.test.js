@@ -7,7 +7,7 @@ import {AuthContextProvider} from "../context/AuthContext";
 
 import Homepage from "../pages/Homepage";
 
-it('renders the homepage', () => {
+it('renders the homepage', async () => {
     render(
         <ReactKeycloakProvider authClient={my_keycloak} initOptions={{ onLoad: 'login-required' }}>
             <React.StrictMode>
@@ -19,11 +19,11 @@ it('renders the homepage', () => {
             </React.StrictMode>
         </ReactKeycloakProvider>
     )
-    const homepageOverall = screen.getByTestId('homepageOverall')
+    const homepageOverall = await screen.findByTestId('homepageOverall')
     expect(homepageOverall).toBeInTheDocument();
 })
 
-it('renders 5 full-width items in the homepage', () => {
+it('renders 5 full-width items in the homepage', async () => {
     render(
         <ReactKeycloakProvider authClient={my_keycloak} initOptions={{ onLoad: 'login-required' }}>
             <React.StrictMode>
@@ -35,6 +35,6 @@ it('renders 5 full-width items in the homepage', () => {
             </React.StrictMode>
         </ReactKeycloakProvider>
     )
-    const homepageItem = screen.getAllByTestId('homepageItem')
+    const homepageItem = await screen.findAllByTestId('homepageItem')
     expect(homepageItem.length).toBe(5);
 })

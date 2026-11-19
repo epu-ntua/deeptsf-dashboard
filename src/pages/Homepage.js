@@ -4,6 +4,7 @@ import HomepageItemFullWidth from "../components/homepage/HomepageItemFullWidth"
 import {servicesHomepage} from "../components/homepage/servicesHomepage";
 import {useKeycloak} from "@react-keycloak/web";
 import LandingPage from './LandingPage'; // Import the new LandingPage component
+import {authEnabled} from "../config";
 
 const Homepage = () => {
     const {keycloak, initialized} = useKeycloak()
@@ -30,12 +31,12 @@ const Homepage = () => {
 
     return (
         <div data-testid={"homepageOverall"}>
-            {keycloak.authenticated ? (
+            {keycloak.authenticated || !authEnabled ? (
                 servicesHomepage.map((service, index) => (
                     <div data-testid={"homepageItem"}>
                         <HomepageItemFullWidth title={service.title} description={service.description} icon={service.icon}
                                                image={service.image} link={service.link} index={index} key={service.id}
-                                               showLink={initialized ? findCommonElement(keycloak.realmAccess.roles, service.roles) : false}
+                                               showLink={initialized ? (!authEnabled || findCommonElement(keycloak.realmAccess?.roles || [], service.roles)) : false}
                         />
                     </div>
                 ))

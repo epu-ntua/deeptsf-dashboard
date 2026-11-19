@@ -34,6 +34,9 @@ Before proceeding, follow the instructions below.
    `CHRONOS_*` are read at container start, so changing them needs only a restart, not a rebuild.
    The upstream certificate is verified; set `CHRONOS_SSL_VERIFY=off` only for a self-signed test server.
 
+   The backend, MLflow and Dagster URLs can also be changed at container start, without a rebuild:
+   `DASHBOARD_BACKEND_URL`, `DASHBOARD_MLFLOW_URL` and `DASHBOARD_DAGSTER_URL` (empty = the `REACT_APP_*` build value).
+
 3. **Docker Compose:** `docker compose up -d --build`
 
 ### Additional Notes

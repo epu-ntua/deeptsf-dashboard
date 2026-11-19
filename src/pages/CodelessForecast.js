@@ -14,6 +14,7 @@ import ModelTrainingSetup from "../components/loadForecastingPipeline/ModelTrain
 import ModelEvaluationSetup from "../components/loadForecastingPipeline/ModelEvaluationSetup";
 import ExperimentExecution from "../components/loadForecastingPipeline/ExperimentExecution";
 import {useKeycloak} from "@react-keycloak/web";
+import {authEnabled} from "../config";
 
 const AlertCustom = React.forwardRef(function Alert(props, ref) {
     return <MuiAlert elevation={6} ref={ref} variant="filled" {...props} />;
@@ -35,12 +36,18 @@ const breadcrumbs = [
 
 const CodelessForecast = () => {
     const {keycloak, initialized} = useKeycloak()
-    const authenticationEnabled = process.env.REACT_APP_AUTH === "True"
+    const authenticationEnabled = authEnabled
     const navigate = useNavigate();
 
     const [allowed, setAllowed] = useState(null);
 
     useEffect(() => {
+        // With auth off there are no roles to check: always allowed.
+        if (!authenticationEnabled) {
+            setAllowed(true);
+            return;
+        }
+
         if (initialized) {
             // Check auth method
             const authMethod = localStorage.getItem('authMethod');
@@ -59,10 +66,6 @@ const CodelessForecast = () => {
             } else {
                 navigate('/');
             }
-        }
-
-        if (!authenticationEnabled) {
-            setAllowed(true);
         }
     }, [initialized, keycloak.authenticated, keycloak.realmAccess?.roles, navigate, authenticationEnabled]);
 
@@ -110,6 +113,11 @@ const CodelessForecast = () => {
     const [seriesUri, setSeriesUri] = useState('')
 
     useEffect(() => {
+        if (!authenticationEnabled) {
+            setAllowed(true)
+            return
+        }
+
         if (initialized) {
             if (keycloak.realmAccess) {
                 let roles = keycloak.realmAccess.roles
@@ -117,10 +125,6 @@ const CodelessForecast = () => {
                     setAllowed(true)
                 } else navigate('/')
             }
-        }
-
-        if (!authenticationEnabled) {
-            setAllowed(true)
         }
     }, [initialized])
 

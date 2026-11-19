@@ -26,6 +26,7 @@ import Box from '@mui/material/Box';
 import Breadcrumb from "../components/layout/Breadcrumb";
 import ByEvaluationMetric from "../components/metrics/ByEvaluationMetric";
 import ByRunID from "../components/metrics/ByRunId";
+import {authEnabled} from "../config";
 
 function TabPanel(props) {
     const {children, value, index, ...other} = props;
@@ -88,12 +89,18 @@ const breadcrumbs = [
 const ExperimentTracking = () => {
 
     const {keycloak, initialized} = useKeycloak()
-    const authenticationEnabled = process.env.REACT_APP_AUTH === "True"
+    const authenticationEnabled = authEnabled
     const navigate = useNavigate();
 
     const [allowed, setAllowed] = useState(null)
 
     useEffect(() => {
+        // With auth off there are no roles to check: always allowed.
+        if (!authenticationEnabled) {
+            setAllowed(true);
+            return;
+        }
+
         if (initialized) {
             // Check auth method
             const authMethod = localStorage.getItem('authMethod');
@@ -112,10 +119,6 @@ const ExperimentTracking = () => {
             } else {
                 navigate('/');
             }
-        }
-
-        if (!authenticationEnabled) {
-            setAllowed(true);
         }
     }, [initialized, keycloak.authenticated, keycloak.realmAccess?.roles, navigate, authenticationEnabled])
 

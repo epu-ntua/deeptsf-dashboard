@@ -34,6 +34,7 @@ import ForecastResult from '../components/foundationModels/ForecastResult';
 import {getFoundationModel} from '../foundationModels';
 import {forecastFile, describeChronosError} from '../api/chronos';
 import {parseSingleSeriesCsv, readFileAsText} from '../utils/deeptsfCsv';
+import {authEnabled} from "../config";
 
 ChartJS.register(
     CategoryScale,
@@ -83,12 +84,18 @@ const validateQuantileLevels = value => {
 const FoundationModels = () => {
 
     const {keycloak, initialized} = useKeycloak()
-    const authenticationEnabled = process.env.REACT_APP_AUTH === "True"
+    const authenticationEnabled = authEnabled
     const navigate = useNavigate();
 
     const [allowed, setAllowed] = useState(null)
 
     useEffect(() => {
+        // With auth off there are no roles to check: always allowed.
+        if (!authenticationEnabled) {
+            setAllowed(true);
+            return;
+        }
+
         if (initialized) {
             // Check auth method
             const authMethod = localStorage.getItem('authMethod');
@@ -107,10 +114,6 @@ const FoundationModels = () => {
             } else {
                 navigate('/');
             }
-        }
-
-        if (!authenticationEnabled) {
-            setAllowed(true);
         }
     }, [initialized, keycloak.authenticated, keycloak.realmAccess?.roles, navigate, authenticationEnabled])
 
