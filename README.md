@@ -23,10 +23,16 @@ Before proceeding, follow the instructions below.
    `REACT_APP_FOUNDATION_MODELS` shows or hides the Foundation Models page, and `REACT_APP_EXPERIMENT_LIST=True` makes
    Codeless Forecast offer a list of the user's MLflow experiments instead of a free-text experiment name.
 
-2. **Foundation Models (Chronos-2):** set `CHRONOS_API_TOKEN` in `.env`. Without it every forecast returns 401.
-   `/chronos` goes to the remote server by default (`CHRONOS_SCHEME=https`, `CHRONOS_HOST=chronos2-inference-server.aiodp.ai`).
-   For the Chronos-2 container of a DeepTSF stack on the same network, set `CHRONOS_SCHEME=http`,
-   `CHRONOS_HOST=<its CHRONOS_HOSTNAME>:8000` and the same `CHRONOS_API_TOKEN` as that stack.
+2. **Foundation Models (Chronos-2):** the image's nginx proxies `/chronos` to a Chronos-2 server and adds
+   `CHRONOS_API_TOKEN` as the bearer token, so set it in `.env` to that server's token (otherwise forecasts return 401).
+   Choose the server with `CHRONOS_SCHEME` and `CHRONOS_HOST`:
+   - **Remote (default):** `https` and `chronos2-inference-server.aiodp.ai`.
+   - **DeepTSF keycloak stack's Chronos-2 API:** `https` and its host (e.g. `deeptsf-chronos.<domain>`), with
+     DeepTSF's `CHRONOS_API_TOKEN`.
+   - **Chronos-2 container on the same docker network:** `http` and `<container name>:8000`.
+
+   `CHRONOS_*` are read at container start, so changing them needs only a restart, not a rebuild.
+   The upstream certificate is verified; set `CHRONOS_SSL_VERIFY=off` only for a self-signed test server.
 
 3. **Docker Compose:** `docker compose up -d --build`
 

@@ -29,6 +29,7 @@ services:
       CHRONOS_API_TOKEN: ${CHRONOS_API_TOKEN:-}
       # https for the remote server; http for a local Chronos-2 container.
       CHRONOS_SCHEME: ${CHRONOS_SCHEME:-https}
+      CHRONOS_SSL_VERIFY: ${CHRONOS_SSL_VERIFY:-on}
       CHRONOS_HOST: ${CHRONOS_HOST:-chronos2-inference-server.aiodp.ai}
     ports:
       - '127.0.0.1:3003:3001'

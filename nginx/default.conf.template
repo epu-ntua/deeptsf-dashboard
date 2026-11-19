@@ -38,6 +38,12 @@ server {
         proxy_set_header Host $chronos_host;
         proxy_ssl_server_name on;
         proxy_ssl_name $chronos_host;
+        # Check the Chronos-2 server's certificate before sending it the token.
+        # Ignored when CHRONOS_SCHEME=http. Set CHRONOS_SSL_VERIFY=off only for a
+        # self-signed test server.
+        proxy_ssl_verify ${CHRONOS_SSL_VERIFY};
+        proxy_ssl_verify_depth 3;
+        proxy_ssl_trusted_certificate /etc/ssl/certs/ca-certificates.crt;
 
         # Replace whatever the browser sent with the real API token.
         proxy_set_header Authorization "Bearer ${CHRONOS_API_TOKEN}";
