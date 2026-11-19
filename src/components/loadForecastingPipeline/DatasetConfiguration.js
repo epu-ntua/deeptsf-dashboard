@@ -78,8 +78,6 @@ const DatasetConfiguration = ({
                                   setNewFile,
                                   newFile,
                                   uploadSuccess,
-                                  dayFirst,
-                                  setDayFirst,
                                   experimentResolution,
                                   setExperimentResolution,
                                   multiSeriesFile,
@@ -152,9 +150,6 @@ const DatasetConfiguration = ({
     const handleAddNewFile = file => {
       setNewFile(file);
       if (file && file.name) setUploadedFileName(file.name);
-    }
-    const handleDayFirstCheckBox = () => {
-        setDayFirst(!dayFirst)
     }
     const handleMultiSeriesCheckBox = () => {
         setMultiSeriesFile(!multiSeriesFile)
@@ -694,27 +689,6 @@ const DatasetConfiguration = ({
                     spacing={2}
                     sx={{ alignItems: "center", justifyContent: "end", mb: 2 }}
                   >
-                    <FormGroup>
-                      <FormControlLabel
-                        control={
-                          <Checkbox
-                            disabled={executionLoading}
-                            checked={dayFirst}
-                            onChange={handleDayFirstCheckBox}
-                            sx={{ "& .MuiSvgIcon-root": { fontSize: 28 } }}
-                          />
-                        }
-                        label={
-                          <Typography
-                            sx={{ ml: "auto" }}
-                            component={"span"}
-                            variant={"h6"}
-                          >
-                            Day First
-                          </Typography>
-                        }
-                      />
-                    </FormGroup>
                     <FormGroup>
                       <FormControlLabel
                         control={

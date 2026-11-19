@@ -70,7 +70,6 @@ const CodelessForecast = () => {
     }, [initialized, keycloak.authenticated, keycloak.realmAccess?.roles, navigate, authenticationEnabled]);
 
     const [newFile, setNewFile] = useState()
-    const [dayFirst, setDayFirst] = useState(false)
     const [models, setModels] = useState([])
     const [model, setModel] = useState('')
     const [errorMessage, setErrorMessage] = useState('')
@@ -196,7 +195,6 @@ const CodelessForecast = () => {
 
     const resetState = () => {
         setNewFile(null);
-        setDayFirst(false);
         setModels([]);
         setModel('');
         setErrorMessage('');
@@ -247,8 +245,6 @@ const CodelessForecast = () => {
                     executionLoading={executionLoading}
                     setNewFile={setNewFile}
                     newFile={newFile}
-                    dayFirst={dayFirst}
-                    setDayFirst={setDayFirst}
                     experimentResolution={experimentResolution}
                     setExperimentResolution={setExperimentResolution}
                     multiSeriesFile={multiSeriesFile}
